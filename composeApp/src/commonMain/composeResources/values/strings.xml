@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Atelier AI</string>
+
+<!--    login-->
+    <string name="login_welcome_body">Enter the atelier to access your curated library and AI-driven reading insights.</string>
+    <string name="login_terms_of_service">Terms of Service</string>
+    <string name="login_privacy_policy">Privacy Policy</string>
+    <string name="login_sign_in_with_google">Sign in with Google</string>
+</resources>
