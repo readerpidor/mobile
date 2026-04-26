@@ -1,6 +1,7 @@
 package com.matttax.reado.navigation
 
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.decompose.DelicateDecomposeApi
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.bringToFront
@@ -8,6 +9,7 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.value.Value
+import com.matttax.reado.data.ReaderService
 import com.matttax.reado.feature.account.presentation.DefaultAccountComponent
 import com.matttax.reado.feature.history.presentation.DefaultHistoryComponent
 import com.matttax.reado.feature.home.presentation.DefaultHomeComponent
@@ -17,6 +19,7 @@ import kotlinx.serialization.Serializable
 
 class DefaultRootComponent(
   componentContext: ComponentContext,
+  private val readerService: ReaderService,
 ) : RootComponent, ComponentContext by componentContext {
 
   private val navigation = StackNavigation<Config>()
@@ -29,6 +32,7 @@ class DefaultRootComponent(
     childFactory = ::child,
   )
 
+  @OptIn(DelicateDecomposeApi::class)
   private fun child(config: Config, context: ComponentContext): RootComponent.Child = when (config) {
     Config.Login -> RootComponent.Child.Login(
       DefaultLoginComponent(
@@ -46,6 +50,7 @@ class DefaultRootComponent(
     Config.Home -> RootComponent.Child.Home(
       DefaultHomeComponent(
         componentContext = context,
+        readerService = readerService,
         onProfileClick = { navigation.push(Config.Account) },
         onHistoryClick = { navigation.push(Config.History) },
         onSubmit = { navigation.push(Config.Reading) },

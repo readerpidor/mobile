@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.arkivanov.decompose.defaultComponentContext
 import com.matttax.reado.navigation.DefaultRootComponent
+import org.koin.mp.KoinPlatform.getKoin
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,6 +15,7 @@ class MainActivity : ComponentActivity() {
 
     val root = DefaultRootComponent(
       componentContext = defaultComponentContext(),
+      readerService = getKoin().get(),
     )
 
     setContent {
