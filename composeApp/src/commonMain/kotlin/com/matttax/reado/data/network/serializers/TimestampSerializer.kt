@@ -1,6 +1,6 @@
 package com.matttax.reado.data.network.serializers
 
-import com.matttax.reado.data.service.common.Timestamp
+import com.matttax.reado.data.model.common.Timestamp
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

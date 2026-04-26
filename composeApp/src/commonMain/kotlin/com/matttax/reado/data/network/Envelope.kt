@@ -1,6 +1,6 @@
 package com.matttax.reado.data.network
 
-import com.matttax.reado.data.service.Response
+import com.matttax.reado.data.model.Response
 import kotlinx.serialization.Serializable
 
 @Serializable

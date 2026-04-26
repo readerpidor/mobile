@@ -2,43 +2,38 @@ package com.matttax.reado
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.tooling.preview.Preview
-import com.matttax.reado.feature.account.presentation.AccountScreen
-import com.matttax.reado.feature.history.HistoryScreen
-import com.matttax.reado.feature.home.HomeScreen
-import com.matttax.reado.feature.login.LoginScreen
-import com.matttax.reado.feature.reading.ReadingScreen
-
-private enum class Screen { Login, Account, Home, History, Reading }
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.matttax.reado.feature.account.presentation.ui.screen.AccountScreen
+import com.matttax.reado.feature.history.presentation.ui.screen.HistoryScreen
+import com.matttax.reado.feature.home.presentation.ui.screen.HomeScreen
+import com.matttax.reado.feature.login.presentation.ui.screen.LoginScreen
+import com.matttax.reado.feature.reading.presentation.ui.screen.ReadingScreen
+import com.matttax.reado.navigation.RootComponent
 
 @Composable
-@Preview
-fun App() {
+fun App(component: RootComponent) {
   MaterialTheme {
-    var screen by remember { mutableStateOf(Screen.Home) }
-    when (screen) {
-      Screen.Login -> LoginScreen(
-        onSignInWithGoogle = { screen = Screen.Account },
+    Children(stack = component.stack) { child ->
+    when (val instance = child.instance) {
+        is RootComponent.Child.Login -> LoginScreen(
+        onSignInWithGoogle = instance.component::onSignInWithGoogle,
       )
-      Screen.Account -> AccountScreen(
-        onBack = { screen = Screen.Login },
-        onCurrentPlan = { screen = Screen.Home },
+        is RootComponent.Child.Account -> AccountScreen(
+        onBack = instance.component::onBack,
+        onCurrentPlan = instance.component::onCurrentPlan,
       )
-      Screen.Home -> HomeScreen(
-        onProfileClick = { screen = Screen.Account },
-        onHistoryClick = { screen = Screen.History },
-        onSubmit = { screen = Screen.Reading },
+        is RootComponent.Child.Home -> HomeScreen(
+        onProfileClick = instance.component::onProfileClick,
+        onHistoryClick = instance.component::onHistoryClick,
+        onSubmit = { instance.component.onSubmit() },
       )
-      Screen.History -> HistoryScreen(
-        onBack = { screen = Screen.Home },
+        is RootComponent.Child.History -> HistoryScreen(
+        onBack = instance.component::onBack,
       )
-      Screen.Reading -> ReadingScreen(
-        onBack = { screen = Screen.Home },
-      )
+        is RootComponent.Child.Reading -> ReadingScreen(
+        onBack = instance.component::onBack,
+        )
+      }
     }
   }
 }

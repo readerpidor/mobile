@@ -22,6 +22,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export(libs.decompose)
+            export(libs.essenty.lifecycle)
         }
     }
     
@@ -45,6 +47,9 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinxJson)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.decompose.extensions.compose)
+            api(libs.decompose)
+            api(libs.essenty.lifecycle)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -85,4 +90,3 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
-
