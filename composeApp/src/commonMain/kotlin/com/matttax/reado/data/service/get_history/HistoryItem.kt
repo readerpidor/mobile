@@ -1,7 +1,9 @@
 package com.matttax.reado.data.service.get_history
 
 import com.matttax.reado.data.service.common.Timestamp
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class HistoryItem(
   val articleId: String,
   val title: String,

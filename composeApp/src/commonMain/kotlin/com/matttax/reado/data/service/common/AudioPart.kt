@@ -1,5 +1,8 @@
 package com.matttax.reado.data.service.common
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class AudioPart(
   val partIndex: Int,
   val audioUrl: String,
