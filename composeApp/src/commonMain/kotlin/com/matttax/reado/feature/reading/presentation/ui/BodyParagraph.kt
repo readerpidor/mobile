@@ -1,6 +1,5 @@
 package com.matttax.reado.feature.reading.presentation.ui
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,9 +11,12 @@ import androidx.compose.ui.unit.sp
 import com.matttax.reado.feature.reading.presentation.ui.screen.BodyPrimary
 
 @Composable
-internal fun BodyParagraph(text: AnnotatedString) {
+internal fun BodyParagraph(
+  text: AnnotatedString,
+  modifier: Modifier = Modifier,
+) {
   Text(
-    modifier = Modifier.fillMaxWidth(),
+    modifier = modifier,
     text = text,
     color = BodyPrimary,
     style = TextStyle(

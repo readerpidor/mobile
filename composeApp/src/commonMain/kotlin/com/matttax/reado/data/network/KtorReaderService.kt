@@ -40,6 +40,11 @@ class KtorReaderService(
       setBody(request)
     }.body<Envelope<ProcessResult, ProcessError>>().toResponse()
 
+  override suspend fun fetchArticleText(url: String): String {
+    val reachable = url.replace(STORAGE_SIGNED_AUTHORITY, STORAGE_REACHABLE_AUTHORITY)
+    return client.get(reachable).body()
+  }
+
   override suspend fun getNextParts(request: GetNextPartsRequest): GetNextPartsResponse =
     client.get("v1/reader/articles/${request.articleId}/next-parts") {
       parameter("last_part_index", request.lastPartIndex)

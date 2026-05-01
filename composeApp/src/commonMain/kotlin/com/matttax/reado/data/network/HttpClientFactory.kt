@@ -2,29 +2,31 @@ package com.matttax.reado.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonNamingStrategy
 
-const val READER_BASE_URL = "http://localhost:8080"
-const val READER_AUTH_TOKEN = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6InRlc3Qta2V5LTEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJyZWFkZXIiLCJzdWIiOiJsb2NhbC11c2VyIiwiYXVkIjpbInJlYWRlciJdLCJleHAiOjE3NzcyNDUwMDQsImlhdCI6MTc3NzE1ODYwNH0.IqKw8zChugGq-C8XqzR9pYiGRwqTWCb4DEjiDYRxudWB2gngEbSW7s7NjKJD5Rhy_Qmae_vxInKqRVx9ipjs1AJp7a-YvfeWVd0Bosy06lM0NhCkksKwcW0rqm1ldPocdRnxYko9d4WJFPDd7pRbI9vQdEGdfVApkBBARXqcE4UY-LdrK8VdWL_P0bgBtv3iIhdyOJGB6_s1jZA9ND7zPB8zxxexqc45Xv4IYSu632rXoa0S0x5x7r3O0hJ2RXt7nXXtOEi7SOCUWprkfD0jrimeu_stRQddghb9Do1seDkh24zvYIWH2beM2zWGqbr2asMqaXSlbL0ZGtR3Ktg3Mw"
+expect val READER_BASE_URL: String
 
-@OptIn(ExperimentalSerializationApi::class)
+const val STORAGE_SIGNED_AUTHORITY = "minio:9000"
+expect val STORAGE_REACHABLE_AUTHORITY: String
+const val READER_AUTH_TOKEN = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6InRlc3Qta2V5LTEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJyZWFkZXIiLCJzdWIiOiJsb2NhbC11c2VyIiwiYXVkIjpbInJlYWRlciJdLCJleHAiOjE3Nzc3MjY2MDUsImlhdCI6MTc3NzY0MDIwNX0.TA1JMZDBynxp7Xqg3_ajvPG3iqdTZJVYCr4UekwKBPMmxM9GnYEhty5DbS7j7k6TqtTzHQ78flxrxBOtGxlW3R4Q_grrZAnMXmHnVelu8ma6CQBWsXJSMsX9Vtyf3S61VgifmwGVjNeBjfBSoQhOHkKt0rYxeHAvwWC2HXJ_V5DzJB74-4-xzNTDaLwRgM1WYdvnweAMIBWTlG1770eVucTWZgqkqwJ5h5DnJF8e1maAfIxtjTEm5PYtsG7g7PpaRrbTujawqu-rUgrN6l_BQiRXiluR1bzcS0RxfhDmE_PNhPNrnoHDHSpP5jqDdtfzehKUXIM1-OtvpfPJUXMQgQ"
+
 val ReaderJson: Json = Json {
   ignoreUnknownKeys = true
   isLenient = true
   encodeDefaults = true
   explicitNulls = false
-  namingStrategy = JsonNamingStrategy.SnakeCase
 }
 
 fun createHttpClient(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
@@ -32,7 +34,13 @@ fun createHttpClient(engine: HttpClientEngine): HttpClient = HttpClient(engine) 
     json(ReaderJson)
   }
   install(Logging) {
-    level = LogLevel.HEADERS
+    logger = Logger.SIMPLE
+    level = LogLevel.ALL
+  }
+  install(HttpTimeout) {
+    requestTimeoutMillis = 5 * 60 * 1000
+    connectTimeoutMillis = 5 * 60 * 1000
+    socketTimeoutMillis = 5 * 60 * 1000
   }
   defaultRequest {
     url(READER_BASE_URL)

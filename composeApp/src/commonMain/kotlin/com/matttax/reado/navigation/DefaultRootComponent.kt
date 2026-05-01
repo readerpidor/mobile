@@ -50,10 +50,9 @@ class DefaultRootComponent(
     Config.Home -> RootComponent.Child.Home(
       DefaultHomeComponent(
         componentContext = context,
-        readerService = readerService,
         onProfileClick = { navigation.push(Config.Account) },
         onHistoryClick = { navigation.push(Config.History) },
-        onSubmit = { navigation.push(Config.Reading) },
+        onSubmit = { url -> navigation.push(Config.Reading(url)) },
       )
     )
     Config.History -> RootComponent.Child.History(
@@ -62,9 +61,11 @@ class DefaultRootComponent(
         onBack = { navigation.pop() },
       )
     )
-    Config.Reading -> RootComponent.Child.Reading(
+    is Config.Reading -> RootComponent.Child.Reading(
       DefaultReadingComponent(
         componentContext = context,
+        readerService = readerService,
+        url = config.url,
         onBack = { navigation.pop() },
       )
     )
@@ -76,6 +77,6 @@ class DefaultRootComponent(
     @Serializable data object Account : Config
     @Serializable data object Home : Config
     @Serializable data object History : Config
-    @Serializable data object Reading : Config
+    @Serializable data class Reading(val url: String) : Config
   }
 }

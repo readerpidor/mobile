@@ -14,6 +14,7 @@ import com.matttax.reado.data.model.process.ProcessResponse
 
 interface ReaderService {
   suspend fun process(request: ProcessRequest): ProcessResponse
+  suspend fun fetchArticleText(url: String): String
   suspend fun getNextParts(request: GetNextPartsRequest): GetNextPartsResponse
   suspend fun getHistory(): GetHistoryResponse
   suspend fun getQAHistory(request: GetQAHistoryRequest): GetQAHistoryResponse
