@@ -48,6 +48,7 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinxJson)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.decompose.extensions.compose)
             api(libs.decompose)
             api(libs.essenty.lifecycle)

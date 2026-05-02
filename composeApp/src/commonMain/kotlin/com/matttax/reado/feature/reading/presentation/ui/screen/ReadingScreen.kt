@@ -32,6 +32,7 @@ import com.matttax.reado.feature.reading.presentation.ui.ArticleHeader
 import com.matttax.reado.feature.reading.presentation.ui.FloatingAiBar
 import com.matttax.reado.feature.reading.presentation.ui.ReadingTopAppBar
 import kotlin.math.max
+import kotlinx.datetime.LocalDate
 
 @Composable
 fun ReadingScreen(
@@ -86,7 +87,10 @@ private fun BoxScope.ErrorContent() {
 }
 
 @Composable
-private fun BoxScope.ArticleContent(result: ProcessResult, text: String) {
+private fun BoxScope.ArticleContent(
+  result: ProcessResult,
+  text: String,
+) {
   val scrollState = rememberScrollState()
   val lastEndMs = result.audioParts.lastOrNull()?.timings?.lastOrNull()?.endMs ?: 0L
   val readMinutes = max(1, ((lastEndMs + 59_999L) / 60_000L).toInt())
@@ -100,10 +104,15 @@ private fun BoxScope.ArticleContent(result: ProcessResult, text: String) {
     verticalArrangement = Arrangement.spacedBy(48.dp),
   ) {
     ArticleHeader(
+      articleTopic = "Unknown",
+      authorName = "Unknown",
       title = result.title,
       readMinutes = readMinutes,
+      publicationDate = LocalDate(2025, 5, 2),
     )
-    ArticleBody(text = text)
+    ArticleBody(
+      text = text,
+    )
   }
   FloatingAiBar(
     modifier = Modifier

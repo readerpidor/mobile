@@ -12,16 +12,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matttax.reado.feature.reading.presentation.ui.screen.BodyPrimary
+import kotlinx.datetime.LocalDate
 
 @Composable
-internal fun ArticleHeader(title: String, readMinutes: Int) {
+internal fun ArticleHeader(
+  articleTopic: String,
+  title: String,
+  readMinutes: Int,
+  authorName: String,
+  publicationDate: LocalDate,
+) {
   Column(
     modifier = Modifier.fillMaxWidth(),
     verticalArrangement = Arrangement.spacedBy(24.dp),
   ) {
-//    ArticleEyebrow(readMinutes = readMinutes)
+    ArticleEyebrow(
+      articleTopic = articleTopic,
+      readMinutes = readMinutes,
+    )
     Text(
-      text = title,
+      text = title.trim(),
       color = BodyPrimary,
       style = TextStyle(
         fontFamily = FontFamily.Serif,
@@ -30,6 +40,9 @@ internal fun ArticleHeader(title: String, readMinutes: Int) {
         lineHeight = 39.6.sp,
       ),
     )
-//    ArticleByline()
+    ArticleByline(
+      authorName = authorName,
+      publicationDate = publicationDate,
+    )
   }
 }
