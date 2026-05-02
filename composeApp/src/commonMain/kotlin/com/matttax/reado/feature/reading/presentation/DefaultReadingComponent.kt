@@ -51,11 +51,29 @@ class DefaultReadingComponent(
   }
 
   private fun updateAnchor(position: PlaybackPosition) {
-    val part = audioParts.getOrNull(position.itemIndex)
-    val anchor = part?.timings.takeUnless { position == PlaybackPosition.EMPTY }
-      ?.firstOrNull { position.positionMs in it.startMs..it.endMs }
-      ?.anchor
-      ?: NO_ANCHOR
+    if (position == PlaybackPosition.EMPTY) {
+      _currentAnchor.value = NO_ANCHOR
+      return
+    }
+    val partIndex = position.itemIndex
+    val part = audioParts.getOrNull(partIndex)
+    if (part == null) {
+      _currentAnchor.value = NO_ANCHOR
+      return
+    }
+    val timings = part.timings
+    val isLastPart = partIndex == audioParts.lastIndex
+    val pos = position.positionMs
+    val anchor = timings.indices.firstNotNullOfOrNull { i ->
+      val timing = timings[i]
+      val isLastTiming = i == timings.lastIndex
+      val matches = when {
+        !isLastTiming -> pos in timing.startMs until timings[i + 1].startMs
+        !isLastPart -> pos >= timing.startMs
+        else -> pos in timing.startMs..timing.endMs
+      }
+      if (matches) timing.anchor else null
+    } ?: NO_ANCHOR
     _currentAnchor.value = anchor
   }
 
