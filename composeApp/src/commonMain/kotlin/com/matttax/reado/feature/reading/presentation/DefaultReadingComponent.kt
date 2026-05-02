@@ -42,7 +42,10 @@ class DefaultReadingComponent(
         when (val response = readerService.process(ProcessRequest(url = url))) {
           is Response.Success -> {
             val text = readerService.fetchArticleText(response.result.articleUrl)
-            ReadingState.Success(response.result, text)
+            val chunks = text.split(Regex("<<\\d+>>"))
+              .map { it.trim() }
+              .filter { it.isNotEmpty() }
+            ReadingState.Success(response.result, chunks)
           }
           is Response.Error -> ReadingState.Error
         }

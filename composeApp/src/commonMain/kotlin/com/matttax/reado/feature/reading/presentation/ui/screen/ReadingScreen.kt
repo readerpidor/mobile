@@ -48,7 +48,7 @@ fun ReadingScreen(
     when (state) {
       ReadingState.Loading -> LoadingContent()
       ReadingState.Error -> ErrorContent()
-      is ReadingState.Success -> ArticleContent(result = state.result, text = state.text)
+      is ReadingState.Success -> ArticleContent(result = state.result, textChunks = state.textChunks)
     }
     ReadingTopAppBar(
       onBack = onBack,
@@ -89,7 +89,7 @@ private fun BoxScope.ErrorContent() {
 @Composable
 private fun BoxScope.ArticleContent(
   result: ProcessResult,
-  text: String,
+  textChunks: List<String>,
 ) {
   val scrollState = rememberScrollState()
   val lastEndMs = result.audioParts.lastOrNull()?.timings?.lastOrNull()?.endMs ?: 0L
@@ -111,7 +111,7 @@ private fun BoxScope.ArticleContent(
       publicationDate = LocalDate(2025, 5, 2),
     )
     ArticleBody(
-      text = text,
+      textChunks = textChunks,
     )
   }
   FloatingAiBar(
