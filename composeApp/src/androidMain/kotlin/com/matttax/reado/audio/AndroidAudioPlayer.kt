@@ -47,10 +47,18 @@ class AndroidAudioPlayer(
         setMediaItems(mediaItems)
         addListener(AudioPlaybackLogger())
         addListener(
-          AudioPlaybackStateListener { playing ->
-            _isPlaying.value = playing
-            if (playing) startPositionUpdates() else stopPositionUpdates()
-          },
+          AudioPlaybackStateListener(
+            onPlayingChanged = { playing ->
+              _isPlaying.value = playing
+              if (playing) startPositionUpdates() else stopPositionUpdates()
+            },
+            onEnded = {
+              isPlayerStarted = false
+              _isPlaying.value = false
+              _position.value = PlaybackPosition.EMPTY
+              stopPositionUpdates()
+            },
+          ),
         )
         prepare()
       }
@@ -61,10 +69,11 @@ class AndroidAudioPlayer(
     if (playerInstance.isPlaying) {
       playerInstance.pause()
     } else {
-      playerInstance.play()
       if (!isPlayerStarted) {
+        playerInstance.seekTo(0, 0L)
         isPlayerStarted = true
       }
+      playerInstance.play()
     }
     Log.i(TAG, "playPause: isPlaying=${playerInstance.isPlaying} state=${playerInstance.playbackState}")
   }

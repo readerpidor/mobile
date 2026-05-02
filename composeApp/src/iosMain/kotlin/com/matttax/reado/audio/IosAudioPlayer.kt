@@ -31,32 +31,29 @@ class IosAudioPlayer : AudioPlayer {
 
   private var player: AVQueuePlayer? = null
   private var items: List<AVPlayerItem> = emptyList()
+  private var playlistItems: List<PlaylistItem> = emptyList()
   private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
   private var positionJob: Job? = null
   private var isPlayerStarted = false
 
   override fun setPlaylist(items: List<PlaylistItem>) {
     release()
-    val avItems = items.mapNotNull { item ->
-      val url = NSURL.URLWithString(item.url) ?: return@mapNotNull null
-      val asset = AVURLAsset(
-        uRL = url,
-        options = mapOf<Any?, Any>("AVURLAssetHTTPHeaderFieldsKey" to item.headers),
-      )
-      AVPlayerItem(asset = asset)
-    }
-    this.items = avItems
-    player = AVQueuePlayer(items = avItems)
+    playlistItems = items
+    rebuildPlayer()
   }
 
   override fun playPause() {
-    val playerInstance = player ?: return
-    if (playerInstance.rate != 0.0f) {
-      playerInstance.pause()
+    val current = player ?: return
+    if (current.rate != 0.0f) {
+      current.pause()
       _isPlaying.value = false
       stopPositionUpdates()
     } else {
-      playerInstance.play()
+      if (current.currentItem == null && playlistItems.isNotEmpty()) {
+        rebuildPlayer()
+      }
+      val active = player ?: return
+      active.play()
       _isPlaying.value = true
       if (!isPlayerStarted) {
         isPlayerStarted = true
@@ -70,9 +67,24 @@ class IosAudioPlayer : AudioPlayer {
     player?.pause()
     player = null
     items = emptyList()
+    playlistItems = emptyList()
     isPlayerStarted = false
     _isPlaying.value = false
     _position.value = PlaybackPosition.EMPTY
+  }
+
+  private fun rebuildPlayer() {
+    val avItems = playlistItems.mapNotNull { item ->
+      val url = NSURL.URLWithString(item.url) ?: return@mapNotNull null
+      val asset = AVURLAsset(
+        uRL = url,
+        options = mapOf<Any?, Any>("AVURLAssetHTTPHeaderFieldsKey" to item.headers),
+      )
+      AVPlayerItem(asset = asset)
+    }
+    items = avItems
+    player?.pause()
+    player = AVQueuePlayer(items = avItems)
   }
 
   @OptIn(ExperimentalForeignApi::class)
@@ -81,6 +93,12 @@ class IosAudioPlayer : AudioPlayer {
     positionJob = scope.launch {
       while (isActive) {
         val p = player ?: break
+        if (isPlayerStarted && p.currentItem == null) {
+          isPlayerStarted = false
+          _isPlaying.value = false
+          _position.value = PlaybackPosition.EMPTY
+          break
+        }
         _position.value = if (isPlayerStarted) {
           val current = p.currentItem
           val idx = if (current != null) items.indexOf(current).coerceAtLeast(0) else 0
