@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matttax.reado.data.model.process.ProcessResult
+import com.matttax.reado.feature.reading.domain.model.ArticleMetadata
 import com.matttax.reado.feature.reading.presentation.ReadingState
 import com.matttax.reado.feature.reading.presentation.ui.ArticleBody
 import com.matttax.reado.feature.reading.presentation.ui.ArticleHeader
@@ -113,11 +114,13 @@ private fun BoxScope.ArticleContent(
     verticalArrangement = Arrangement.spacedBy(48.dp),
   ) {
     ArticleHeader(
-      articleTopic = "Unknown",
-      authorName = "Unknown",
-      title = result.title,
-      readMinutes = readMinutes,
-      publicationDate = LocalDate(2025, 5, 2),
+      metadata = ArticleMetadata(
+        articleTopic = "Unknown",
+        title = result.title,
+        readMinutes = readMinutes,
+        authorName = "Unknown",
+        publicationDate = LocalDate(2025, 5, 2),
+      ),
       isPlaying = isPlaying,
       onPlayPauseClick = onPlayPauseClick,
     )

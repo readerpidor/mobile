@@ -11,16 +11,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.matttax.reado.feature.reading.domain.model.ArticleMetadata
 import com.matttax.reado.feature.reading.presentation.ui.screen.BodyPrimary
-import kotlinx.datetime.LocalDate
 
 @Composable
 internal fun ArticleHeader(
-  articleTopic: String,
-  title: String,
-  readMinutes: Int,
-  authorName: String,
-  publicationDate: LocalDate,
+  metadata: ArticleMetadata,
   isPlaying: Boolean,
   onPlayPauseClick: () -> Unit,
 ) {
@@ -29,11 +25,11 @@ internal fun ArticleHeader(
     verticalArrangement = Arrangement.spacedBy(24.dp),
   ) {
     ArticleEyebrow(
-      articleTopic = articleTopic,
-      readMinutes = readMinutes,
+      articleTopic = metadata.articleTopic,
+      readMinutes = metadata.readMinutes,
     )
     Text(
-      text = title.trim(),
+      text = metadata.title.trim(),
       color = BodyPrimary,
       style = TextStyle(
         fontFamily = FontFamily.Serif,
@@ -43,8 +39,8 @@ internal fun ArticleHeader(
       ),
     )
     ArticleByline(
-      authorName = authorName,
-      publicationDate = publicationDate,
+      authorName = metadata.authorName,
+      publicationDate = metadata.publicationDate,
       isPlaying = isPlaying,
       onPlayPauseClick = onPlayPauseClick,
     )

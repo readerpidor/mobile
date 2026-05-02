@@ -96,6 +96,5 @@ internal fun ArticleByline(
 
 private fun formatPublicationDate(date: LocalDate): String {
   val month = date.month.name.lowercase().replaceFirstChar { it.uppercase() }
-  @Suppress("DEPRECATION")
-  return "$month ${date.dayOfMonth}, ${date.year}"
+  return "$month ${date.day}, ${date.year}"
 }
