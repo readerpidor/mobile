@@ -26,13 +26,14 @@ class IosAudioPlayer : AudioPlayer {
   private val _isPlaying = MutableValue(false)
   override val isPlaying: Value<Boolean> = _isPlaying
 
-  private val _position = MutableValue(PlaybackPosition(itemIndex = 0, positionMs = 0L))
+  private val _position = MutableValue(PlaybackPosition.EMPTY)
   override val position: Value<PlaybackPosition> = _position
 
   private var player: AVQueuePlayer? = null
   private var items: List<AVPlayerItem> = emptyList()
   private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
   private var positionJob: Job? = null
+  private var isPlayerStarted = false
 
   override fun setPlaylist(items: List<PlaylistItem>) {
     release()
@@ -57,6 +58,9 @@ class IosAudioPlayer : AudioPlayer {
     } else {
       playerInstance.play()
       _isPlaying.value = true
+      if (!isPlayerStarted) {
+        isPlayerStarted = true
+      }
       startPositionUpdates()
     }
   }
@@ -66,8 +70,9 @@ class IosAudioPlayer : AudioPlayer {
     player?.pause()
     player = null
     items = emptyList()
+    isPlayerStarted = false
     _isPlaying.value = false
-    _position.value = PlaybackPosition(itemIndex = 0, positionMs = 0L)
+    _position.value = PlaybackPosition.EMPTY
   }
 
   @OptIn(ExperimentalForeignApi::class)
@@ -76,11 +81,15 @@ class IosAudioPlayer : AudioPlayer {
     positionJob = scope.launch {
       while (isActive) {
         val p = player ?: break
-        val current = p.currentItem
-        val idx = if (current != null) items.indexOf(current).coerceAtLeast(0) else 0
-        val seconds = current?.currentTime()?.let { CMTimeGetSeconds(it) } ?: 0.0
-        val ms = if (seconds.isFinite()) (seconds * 1000.0).toLong() else 0L
-        _position.value = PlaybackPosition(itemIndex = idx, positionMs = ms)
+        _position.value = if (isPlayerStarted) {
+          val current = p.currentItem
+          val idx = if (current != null) items.indexOf(current).coerceAtLeast(0) else 0
+          val seconds = current?.currentTime()?.let { CMTimeGetSeconds(it) } ?: 0.0
+          val ms = if (seconds.isFinite()) (seconds * 1000.0).toLong() else 0L
+          PlaybackPosition(itemIndex = idx, positionMs = ms)
+        } else {
+          PlaybackPosition.EMPTY
+        }
         delay(POLL_INTERVAL_MS)
       }
     }

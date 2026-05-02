@@ -100,8 +100,8 @@ private fun BoxScope.ErrorContent() {
 private fun BoxScope.ArticleContent(
   result: ProcessResult,
   textChunks: Map<Int, String>,
-  isPlaying: Boolean,
   currentAnchor: Int,
+  isPlaying: Boolean,
   onPlayPauseClick: () -> Unit,
 ) {
   val scrollState = rememberScrollState()
