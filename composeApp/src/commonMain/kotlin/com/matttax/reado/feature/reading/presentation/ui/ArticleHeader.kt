@@ -21,6 +21,8 @@ internal fun ArticleHeader(
   readMinutes: Int,
   authorName: String,
   publicationDate: LocalDate,
+  isPlaying: Boolean,
+  onPlayPauseClick: () -> Unit,
 ) {
   Column(
     modifier = Modifier.fillMaxWidth(),
@@ -43,6 +45,8 @@ internal fun ArticleHeader(
     ArticleByline(
       authorName = authorName,
       publicationDate = publicationDate,
+      isPlaying = isPlaying,
+      onPlayPauseClick = onPlayPauseClick,
     )
   }
 }

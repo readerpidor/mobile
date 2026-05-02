@@ -37,8 +37,10 @@ import kotlinx.datetime.LocalDate
 @Composable
 fun ReadingScreen(
   state: ReadingState,
+  isPlaying: Boolean,
   modifier: Modifier = Modifier,
   onBack: () -> Unit = {},
+  onPlayPauseClick: () -> Unit = {},
 ) {
   Box(
     modifier = modifier
@@ -48,7 +50,12 @@ fun ReadingScreen(
     when (state) {
       ReadingState.Loading -> LoadingContent()
       ReadingState.Error -> ErrorContent()
-      is ReadingState.Success -> ArticleContent(result = state.result, textChunks = state.textChunks)
+      is ReadingState.Success -> ArticleContent(
+        result = state.result,
+        textChunks = state.textChunks,
+        isPlaying = isPlaying,
+        onPlayPauseClick = onPlayPauseClick,
+      )
     }
     ReadingTopAppBar(
       onBack = onBack,
@@ -90,6 +97,8 @@ private fun BoxScope.ErrorContent() {
 private fun BoxScope.ArticleContent(
   result: ProcessResult,
   textChunks: List<String>,
+  isPlaying: Boolean,
+  onPlayPauseClick: () -> Unit,
 ) {
   val scrollState = rememberScrollState()
   val lastEndMs = result.audioParts.lastOrNull()?.timings?.lastOrNull()?.endMs ?: 0L
@@ -109,6 +118,8 @@ private fun BoxScope.ArticleContent(
       title = result.title,
       readMinutes = readMinutes,
       publicationDate = LocalDate(2025, 5, 2),
+      isPlaying = isPlaying,
+      onPlayPauseClick = onPlayPauseClick,
     )
     ArticleBody(
       textChunks = textChunks,
@@ -125,5 +136,5 @@ private fun BoxScope.ArticleContent(
 @Composable
 @Preview
 private fun ReadingScreenPreview() {
-  ReadingScreen(state = ReadingState.Loading)
+  ReadingScreen(state = ReadingState.Loading, isPlaying = false)
 }

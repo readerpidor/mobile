@@ -16,6 +16,7 @@ class MainActivity : ComponentActivity() {
     val root = DefaultRootComponent(
       componentContext = defaultComponentContext(),
       readerService = getKoin().get(),
+      audioPlayer = getKoin().get(),
     )
 
     setContent {

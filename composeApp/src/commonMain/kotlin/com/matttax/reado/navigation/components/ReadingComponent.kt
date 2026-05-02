@@ -5,5 +5,7 @@ import com.matttax.reado.feature.reading.presentation.ReadingState
 
 interface ReadingComponent {
   val state: Value<ReadingState>
+  val isPlaying: Value<Boolean>
+  fun onPlayPauseClick()
   fun onBack()
 }

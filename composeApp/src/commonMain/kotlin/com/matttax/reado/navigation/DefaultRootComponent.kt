@@ -9,6 +9,7 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.value.Value
+import com.matttax.reado.audio.AudioPlayer
 import com.matttax.reado.data.ReaderService
 import com.matttax.reado.feature.account.presentation.DefaultAccountComponent
 import com.matttax.reado.feature.history.presentation.DefaultHistoryComponent
@@ -20,6 +21,7 @@ import kotlinx.serialization.Serializable
 class DefaultRootComponent(
   componentContext: ComponentContext,
   private val readerService: ReaderService,
+  private val audioPlayer: AudioPlayer,
 ) : RootComponent, ComponentContext by componentContext {
 
   private val navigation = StackNavigation<Config>()
@@ -65,6 +67,7 @@ class DefaultRootComponent(
       DefaultReadingComponent(
         componentContext = context,
         readerService = readerService,
+        audioPlayer = audioPlayer,
         url = config.url,
         onBack = { navigation.pop() },
       )

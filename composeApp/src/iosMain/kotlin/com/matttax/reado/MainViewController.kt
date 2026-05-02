@@ -13,6 +13,7 @@ fun MainViewController(): UIViewController {
   val root = DefaultRootComponent(
     componentContext = DefaultComponentContext(lifecycle = lifecycle),
     readerService = getKoin().get(),
+    audioPlayer = getKoin().get(),
   )
   lifecycle.resume()
   return ComposeUIViewController { App(root) }

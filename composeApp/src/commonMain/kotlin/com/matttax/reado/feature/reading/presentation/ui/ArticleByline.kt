@@ -26,7 +26,12 @@ import com.matttax.reado.feature.reading.presentation.ui.screen.HeaderPrimary
 import kotlinx.datetime.LocalDate
 
 @Composable
-internal fun ArticleByline(authorName: String, publicationDate: LocalDate) {
+internal fun ArticleByline(
+  authorName: String,
+  publicationDate: LocalDate,
+  isPlaying: Boolean,
+  onPlayPauseClick: () -> Unit,
+) {
   val initials = authorName.trim().split(Regex("\\s+"))
     .filter { it.isNotEmpty() }
     .let { words ->
@@ -85,11 +90,12 @@ internal fun ArticleByline(authorName: String, publicationDate: LocalDate) {
         )
       }
     }
-    PlayFab()
+    PlayFab(isPlaying = isPlaying, onClick = onPlayPauseClick)
   }
 }
 
 private fun formatPublicationDate(date: LocalDate): String {
   val month = date.month.name.lowercase().replaceFirstChar { it.uppercase() }
+  @Suppress("DEPRECATION")
   return "$month ${date.dayOfMonth}, ${date.year}"
 }
