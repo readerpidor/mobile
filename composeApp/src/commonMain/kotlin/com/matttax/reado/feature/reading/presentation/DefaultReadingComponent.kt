@@ -5,9 +5,11 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.matttax.reado.audio.AudioPlayer
+import com.matttax.reado.audio.PlaybackPosition
 import com.matttax.reado.audio.PlaylistItem
 import com.matttax.reado.data.ReaderService
 import com.matttax.reado.data.model.Response
+import com.matttax.reado.data.model.common.AudioPart
 import com.matttax.reado.data.model.process.ProcessRequest
 import com.matttax.reado.data.network.STORAGE_REACHABLE_AUTHORITY
 import com.matttax.reado.data.network.STORAGE_SIGNED_AUTHORITY
@@ -33,12 +35,30 @@ class DefaultReadingComponent(
   override val state: Value<ReadingState> = _state
   override val isPlaying: Value<Boolean> = audioPlayer.isPlaying
 
+  private val _currentAnchor = MutableValue(NO_ANCHOR)
+  override val currentAnchor: Value<Int> = _currentAnchor
+
+  private var audioParts: List<AudioPart> = emptyList()
+
   init {
+    val positionSub = audioPlayer.position.subscribe(::updateAnchor)
     lifecycle.doOnDestroy {
+      positionSub.cancel()
       audioPlayer.release()
       scope.cancel()
     }
     load()
+  }
+
+  private fun updateAnchor(position: PlaybackPosition) {
+    val part = audioParts.getOrNull(position.itemIndex)
+    val anchor = part?.timings
+      ?.firstOrNull { position.positionMs in it.startMs..it.endMs }
+      ?.anchor
+      ?: NO_ANCHOR
+    if (_currentAnchor.value != anchor) {
+      _currentAnchor.value = anchor
+    }
   }
 
   override fun onBack() {
@@ -56,9 +76,8 @@ class DefaultReadingComponent(
         when (val response = readerService.process(ProcessRequest(url = url))) {
           is Response.Success -> {
             val text = readerService.fetchArticleText(response.result.articleUrl)
-            val chunks = text.split(Regex("<<\\d+>>"))
-              .map { it.trim() }
-              .filter { it.isNotEmpty() }
+            val textChunks = processText(text)
+            audioParts = response.result.audioParts
             audioPlayer.setPlaylist(
               response.result.audioParts.map { part ->
                 PlaylistItem(
@@ -67,7 +86,7 @@ class DefaultReadingComponent(
                 )
               },
             )
-            ReadingState.Success(response.result, chunks)
+            ReadingState.Success(response.result, textChunks)
           }
           is Response.Error -> ReadingState.Error
         }
@@ -75,5 +94,23 @@ class DefaultReadingComponent(
         ReadingState.Error
       }
     }
+  }
+
+  private fun processText(text: String): Map<Int, String> {
+    val matches = Regex("<<(\\d+)>>").findAll(text).toList()
+    return buildMap {
+      matches.forEachIndexed { i, m ->
+        val anchor = m.groupValues[1].toInt()
+        val start = m.range.last + 1
+        val end = matches.getOrNull(i + 1)?.range?.first ?: text.length
+        val value = text.substring(start, end).trim()
+        if (value.isNotEmpty()) put(anchor, value)
+      }
+    }
+  }
+
+
+  companion object {
+    const val NO_ANCHOR = -1
   }
 }

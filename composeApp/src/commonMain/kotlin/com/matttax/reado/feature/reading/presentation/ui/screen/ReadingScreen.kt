@@ -39,6 +39,7 @@ import kotlinx.datetime.LocalDate
 fun ReadingScreen(
   state: ReadingState,
   isPlaying: Boolean,
+  currentAnchor: Int,
   modifier: Modifier = Modifier,
   onBack: () -> Unit = {},
   onPlayPauseClick: () -> Unit = {},
@@ -55,6 +56,7 @@ fun ReadingScreen(
         result = state.result,
         textChunks = state.textChunks,
         isPlaying = isPlaying,
+        currentAnchor = currentAnchor,
         onPlayPauseClick = onPlayPauseClick,
       )
     }
@@ -97,8 +99,9 @@ private fun BoxScope.ErrorContent() {
 @Composable
 private fun BoxScope.ArticleContent(
   result: ProcessResult,
-  textChunks: List<String>,
+  textChunks: Map<Int, String>,
   isPlaying: Boolean,
+  currentAnchor: Int,
   onPlayPauseClick: () -> Unit,
 ) {
   val scrollState = rememberScrollState()
@@ -126,6 +129,7 @@ private fun BoxScope.ArticleContent(
     )
     ArticleBody(
       textChunks = textChunks,
+      currentAnchor = currentAnchor,
     )
   }
   FloatingAiBar(
@@ -139,5 +143,5 @@ private fun BoxScope.ArticleContent(
 @Composable
 @Preview
 private fun ReadingScreenPreview() {
-  ReadingScreen(state = ReadingState.Loading, isPlaying = false)
+  ReadingScreen(state = ReadingState.Loading, isPlaying = false, currentAnchor = -1)
 }

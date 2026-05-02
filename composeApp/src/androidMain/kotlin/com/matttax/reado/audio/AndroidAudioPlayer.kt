@@ -10,6 +10,13 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class AndroidAudioPlayer(
   private val context: Context,
@@ -18,7 +25,12 @@ class AndroidAudioPlayer(
   private val _isPlaying = MutableValue(false)
   override val isPlaying: Value<Boolean> = _isPlaying
 
+  private val _position = MutableValue(PlaybackPosition(itemIndex = 0, positionMs = 0L))
+  override val position: Value<PlaybackPosition> = _position
+
   private var player: ExoPlayer? = null
+  private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+  private var positionJob: Job? = null
 
   @OptIn(UnstableApi::class)
   override fun setPlaylist(items: List<PlaylistItem>) {
@@ -26,14 +38,19 @@ class AndroidAudioPlayer(
     if (items.isEmpty()) return
     val headers = items.firstOrNull()?.headers.orEmpty()
     val mediaItems = items.map { MediaItem.fromUri(it.url) }
-    Log.i(TAG, "setPlaylist: ${items.size} items, headers=${headers}")
+    Log.i(TAG, "setPlaylist: ${items.size} items, headers=$headers")
     player = ExoPlayer.Builder(context)
       .setMediaSourceFactory(getSourceFactory(headers))
       .build()
       .apply {
         setMediaItems(mediaItems)
         addListener(AudioPlaybackLogger())
-        addListener(AudioPlaybackStateListener { playing -> _isPlaying.value = playing })
+        addListener(
+          AudioPlaybackStateListener { playing ->
+            _isPlaying.value = playing
+            if (playing) startPositionUpdates() else stopPositionUpdates()
+          },
+        )
         prepare()
       }
   }
@@ -49,9 +66,34 @@ class AndroidAudioPlayer(
   }
 
   override fun release() {
+    stopPositionUpdates()
     player?.release()
     player = null
     _isPlaying.value = false
+    _position.value = PlaybackPosition(itemIndex = 0, positionMs = 0L)
+  }
+
+  private fun startPositionUpdates() {
+    positionJob?.cancel()
+    positionJob = scope.launch {
+      while (isActive) {
+        player?.let { playerInstance ->
+          _position.value = PlaybackPosition(
+            itemIndex = playerInstance.currentMediaItemIndex,
+            positionMs = playerInstance.currentPosition,
+          )
+          delay(POLL_INTERVAL_MS)
+        }
+      }
+    }
+  }
+
+  private fun stopPositionUpdates() {
+    positionJob?.cancel()
+    positionJob = null
+    player?.let { playerInstance ->
+      _position.value = PlaybackPosition(playerInstance.currentMediaItemIndex, playerInstance.currentPosition)
+    }
   }
 
   private fun getSourceFactory(headers: Map<String, String>) =
@@ -61,14 +103,15 @@ class AndroidAudioPlayer(
   @OptIn(UnstableApi::class)
   private fun getHttpFactory(headers: Map<String, String>) =
     DefaultHttpDataSource.Factory()
-    .setAllowCrossProtocolRedirects(true)
-    .apply {
-      if (headers.isNotEmpty()) {
-        setDefaultRequestProperties(headers)
+      .setAllowCrossProtocolRedirects(true)
+      .apply {
+        if (headers.isNotEmpty()) {
+          setDefaultRequestProperties(headers)
+        }
       }
-    }
 
   private companion object {
     const val TAG = "AndroidAudioPlayer"
+    const val POLL_INTERVAL_MS = 50L
   }
 }

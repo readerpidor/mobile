@@ -35,9 +35,11 @@ fun App(component: RootComponent) {
         is RootComponent.Child.Reading -> {
           val state by instance.component.state.subscribeAsState()
           val isPlaying by instance.component.isPlaying.subscribeAsState()
+          val currentAnchor by instance.component.currentAnchor.subscribeAsState()
           ReadingScreen(
             state = state,
             isPlaying = isPlaying,
+            currentAnchor = currentAnchor,
             onBack = instance.component::onBack,
             onPlayPauseClick = instance.component::onPlayPauseClick,
           )
