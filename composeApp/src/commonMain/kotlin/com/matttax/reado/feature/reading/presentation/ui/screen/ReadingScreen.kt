@@ -1,5 +1,8 @@
 package com.matttax.reado.feature.reading.presentation.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +52,7 @@ private const val LEAD_ITEMS_COUNT = 2
 fun ReadingScreen(
   state: ReadingState,
   isPlaying: Boolean,
+  isPlayerStarted: Boolean,
   currentAnchor: Int,
   modifier: Modifier = Modifier,
   onBack: () -> Unit = {},
@@ -68,6 +72,7 @@ fun ReadingScreen(
         result = state.result,
         textChunks = state.textChunks,
         isPlaying = isPlaying,
+        isPlayerStarted = isPlayerStarted,
         currentAnchor = currentAnchor,
         topPadding = topBarHeight,
         onPlayPauseClick = onPlayPauseClick,
@@ -118,6 +123,7 @@ private fun BoxScope.ArticleContent(
   textChunks: Map<Int, String>,
   currentAnchor: Int,
   isPlaying: Boolean,
+  isPlayerStarted: Boolean,
   topPadding: Dp,
   onPlayPauseClick: () -> Unit,
 ) {
@@ -193,16 +199,24 @@ private fun BoxScope.ArticleContent(
     }
   }
 
-  FloatingAiBar(
-    modifier = Modifier
-      .align(Alignment.BottomCenter)
-      .fillMaxWidth()
-      .padding(horizontal = 24.dp, vertical = 32.dp),
-  )
+  AnimatedVisibility(
+    visible = isPlayerStarted,
+    enter = slideInVertically(initialOffsetY = { it }),
+    exit = slideOutVertically(targetOffsetY = { it }),
+    modifier = Modifier.align(Alignment.BottomCenter),
+  ) {
+    FloatingAiBar(
+      isPlaying = isPlaying,
+      onPlayPauseClick = onPlayPauseClick,
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 24.dp, vertical = 32.dp),
+    )
+  }
 }
 
 @Composable
 @Preview
 private fun ReadingScreenPreview() {
-  ReadingScreen(state = ReadingState.Loading, isPlaying = false, currentAnchor = -1)
+  ReadingScreen(state = ReadingState.Loading, isPlaying = false, isPlayerStarted = false, currentAnchor = -1)
 }

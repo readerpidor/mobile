@@ -29,12 +29,14 @@ class IosAudioPlayer : AudioPlayer {
   private val _position = MutableValue(PlaybackPosition.EMPTY)
   override val position: Value<PlaybackPosition> = _position
 
+  private val _isPlayerStarted = MutableValue(false)
+  override val isPlayerStarted: Value<Boolean> = _isPlayerStarted
+
   private var player: AVQueuePlayer? = null
   private var items: List<AVPlayerItem> = emptyList()
   private var playlistItems: List<PlaylistItem> = emptyList()
   private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
   private var positionJob: Job? = null
-  private var isPlayerStarted = false
 
   override fun setPlaylist(items: List<PlaylistItem>) {
     release()
@@ -55,8 +57,8 @@ class IosAudioPlayer : AudioPlayer {
       val active = player ?: return
       active.play()
       _isPlaying.value = true
-      if (!isPlayerStarted) {
-        isPlayerStarted = true
+      if (!_isPlayerStarted.value) {
+        _isPlayerStarted.value = true
       }
       startPositionUpdates()
     }
@@ -68,7 +70,7 @@ class IosAudioPlayer : AudioPlayer {
     player = null
     items = emptyList()
     playlistItems = emptyList()
-    isPlayerStarted = false
+    _isPlayerStarted.value = false
     _isPlaying.value = false
     _position.value = PlaybackPosition.EMPTY
   }
@@ -93,13 +95,13 @@ class IosAudioPlayer : AudioPlayer {
     positionJob = scope.launch {
       while (isActive) {
         val p = player ?: break
-        if (isPlayerStarted && p.currentItem == null) {
-          isPlayerStarted = false
+        if (_isPlayerStarted.value && p.currentItem == null) {
+          _isPlayerStarted.value = false
           _isPlaying.value = false
           _position.value = PlaybackPosition.EMPTY
           break
         }
-        _position.value = if (isPlayerStarted) {
+        _position.value = if (_isPlayerStarted.value) {
           val current = p.currentItem
           val idx = if (current != null) items.indexOf(current).coerceAtLeast(0) else 0
           val seconds = current?.currentTime()?.let { CMTimeGetSeconds(it) } ?: 0.0

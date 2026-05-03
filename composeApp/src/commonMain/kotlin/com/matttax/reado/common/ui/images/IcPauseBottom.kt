@@ -7,9 +7,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val IcSpeaker: ImageVector
+val IcPauseBottom: ImageVector
   get() = ImageVector.Builder(
-    name = "ic_speaker",
+    name = "ic_pause_bottom",
     defaultWidth = 11.6667.dp,
     defaultHeight = 11.6667.dp,
     viewportWidth = 11.6667f,

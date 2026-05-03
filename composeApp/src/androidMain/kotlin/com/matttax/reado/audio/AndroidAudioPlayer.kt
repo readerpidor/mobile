@@ -28,10 +28,12 @@ class AndroidAudioPlayer(
   private val _position = MutableValue(PlaybackPosition.EMPTY)
   override val position: Value<PlaybackPosition> = _position
 
+  private val _isPlayerStarted = MutableValue(false)
+  override val isPlayerStarted: Value<Boolean> = _isPlayerStarted
+
   private var player: ExoPlayer? = null
   private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
   private var positionJob: Job? = null
-  private var isPlayerStarted = false
 
   @OptIn(UnstableApi::class)
   override fun setPlaylist(items: List<PlaylistItem>) {
@@ -53,7 +55,7 @@ class AndroidAudioPlayer(
               if (playing) startPositionUpdates() else stopPositionUpdates()
             },
             onEnded = {
-              isPlayerStarted = false
+              _isPlayerStarted.value = false
               _isPlaying.value = false
               _position.value = PlaybackPosition.EMPTY
               stopPositionUpdates()
@@ -69,9 +71,9 @@ class AndroidAudioPlayer(
     if (playerInstance.isPlaying) {
       playerInstance.pause()
     } else {
-      if (!isPlayerStarted) {
+      if (!_isPlayerStarted.value) {
         playerInstance.seekTo(0, 0L)
-        isPlayerStarted = true
+        _isPlayerStarted.value = true
       }
       playerInstance.play()
     }
@@ -82,6 +84,7 @@ class AndroidAudioPlayer(
     stopPositionUpdates()
     player?.release()
     player = null
+    _isPlayerStarted.value = false
     _isPlaying.value = false
     _position.value = PlaybackPosition.EMPTY
   }
@@ -91,7 +94,7 @@ class AndroidAudioPlayer(
     positionJob = scope.launch {
       while (isActive) {
         player?.let { playerInstance ->
-          _position.value = if (isPlayerStarted) {
+          _position.value = if (_isPlayerStarted.value) {
             PlaybackPosition(
               itemIndex = playerInstance.currentMediaItemIndex,
               positionMs = playerInstance.currentPosition,
