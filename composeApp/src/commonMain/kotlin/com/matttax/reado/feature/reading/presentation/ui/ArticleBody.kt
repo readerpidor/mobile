@@ -12,10 +12,12 @@ import androidx.compose.ui.unit.sp
 import com.matttax.reado.feature.reading.presentation.ui.screen.BodyPrimary
 import com.matttax.reado.feature.reading.presentation.ui.screen.ChunkActive
 
-internal fun LazyListScope.articleBody(textChunks: Map<Int, String>, currentAnchor: Int) {
-  val sortedAnchors = textChunks.keys.sorted()
+internal fun LazyListScope.articleBody(
+  textChunks: Map<Int, String>,
+  currentAnchor: Int,
+) {
   items(
-    items = sortedAnchors,
+    items = textChunks.keys.sorted(),
     key = { it },
   ) { anchor ->
     textChunks[anchor]?.let { chunk ->

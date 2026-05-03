@@ -43,6 +43,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.math.max
 
 private const val BOTTOM_THRESHOLD_FRACTION = 0.7f
+private const val LEAD_ITEMS_COUNT = 2
 
 @Composable
 fun ReadingScreen(
@@ -160,7 +161,7 @@ private fun BoxScope.ArticleContent(
     if (currentAnchor < 0) return@LaunchedEffect
     val chunkIdx = sortedAnchors.indexOf(currentAnchor)
     if (chunkIdx < 0) return@LaunchedEffect
-    val itemIndex = chunkIdx + 1
+    val itemIndex = chunkIdx + LEAD_ITEMS_COUNT
 
     val info = lazyListState.layoutInfo
     val viewportHeight = info.viewportEndOffset - info.viewportStartOffset
@@ -186,8 +187,9 @@ private fun BoxScope.ArticleContent(
     val updatedViewportH = updatedInfo.viewportEndOffset - updatedInfo.viewportStartOffset
     val updatedThreshold = updatedInfo.viewportStartOffset + (updatedViewportH * BOTTOM_THRESHOLD_FRACTION).toInt()
     val updatedBottom = updated.offset + updated.size
-    if (updatedBottom > updatedThreshold) {
-      lazyListState.animateScrollBy((updatedBottom - updatedThreshold).toFloat())
+    val delta = updatedBottom - updatedThreshold
+    if (delta != 0) {
+      lazyListState.animateScrollBy(delta.toFloat())
     }
   }
 
