@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -94,4 +95,34 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+}
+
+val generatedSecretsDir: Provider<Directory> =
+    layout.buildDirectory.dir("generated/source/secrets/commonMain/kotlin")
+
+val generateSecrets by tasks.registering {
+    val outputDir = generatedSecretsDir
+    outputs.dir(outputDir)
+    val localPropsFile = rootProject.file("local.properties")
+    inputs.file(localPropsFile).optional(true)
+    doLast {
+        val props = Properties()
+        if (localPropsFile.exists()) {
+            localPropsFile.inputStream().use { props.load(it) }
+        }
+        val token = props.getProperty("READER_AUTH_TOKEN", "")
+        val packageDir = outputDir.get().asFile.resolve("com/matttax/reado/data/network")
+        packageDir.mkdirs()
+        packageDir.resolve("Secrets.kt").writeText(
+            """
+            package com.matttax.reado.data.network
+
+            internal const val READER_AUTH_TOKEN: String = "$token"
+            """.trimIndent() + "\n",
+        )
+    }
+}
+
+kotlin.sourceSets.named("commonMain") {
+    kotlin.srcDir(generateSecrets)
 }
