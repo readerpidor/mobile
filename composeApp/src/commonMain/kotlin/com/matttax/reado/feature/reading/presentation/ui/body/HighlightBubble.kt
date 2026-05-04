@@ -11,8 +11,9 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import com.matttax.reado.feature.reading.presentation.ui.screen.ChunkActiveBg
 
-fun DrawScope.drawBubbleShape(layout: TextLayoutResult? = null) {
+fun DrawScope.drawBubbleShape(layout: TextLayoutResult? = null, alpha: Float = 1f) {
   val tl = layout ?: return
+  if (alpha <= 0f) return
   val padH = 8.dp.toPx()
 
   val lineRects = buildList {
@@ -37,11 +38,11 @@ fun DrawScope.drawBubbleShape(layout: TextLayoutResult? = null) {
     for (layer in ChunkShadowLayers) {
       drawPath(
         path = buildShape(lineRects, layer.spreadDp.dp.toPx(), layer.dyDp.dp.toPx()),
-        color = ChunkActiveBg.copy(alpha = layer.alpha),
+        color = ChunkActiveBg.copy(alpha = layer.alpha * alpha),
       )
     }
   }
-  drawPath(path = bodyPath, color = ChunkActiveBg)
+  drawPath(path = bodyPath, color = ChunkActiveBg.copy(alpha = ChunkActiveBg.alpha * alpha))
 }
 
 private val ChunkShadowLayers: List<ShadowLayer> = run {

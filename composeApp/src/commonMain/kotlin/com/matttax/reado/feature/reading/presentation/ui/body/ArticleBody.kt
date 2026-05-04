@@ -1,5 +1,7 @@
 package com.matttax.reado.feature.reading.presentation.ui.body
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -28,12 +30,16 @@ internal fun LazyListScope.articleBody(
     textChunks[anchor]?.let { chunk ->
       val isActive = anchor == currentAnchor
       var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+      val bubbleAlpha by animateFloatAsState(
+        targetValue = if (isActive) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+      )
       Text(
         modifier = Modifier
           .fillMaxWidth()
           .drawBehind {
-            if (!isActive) return@drawBehind
-            drawBubbleShape(layout)
+            if (bubbleAlpha <= 0f) return@drawBehind
+            drawBubbleShape(layout, bubbleAlpha)
           },
         text = chunk,
         color = BodyPrimary,
