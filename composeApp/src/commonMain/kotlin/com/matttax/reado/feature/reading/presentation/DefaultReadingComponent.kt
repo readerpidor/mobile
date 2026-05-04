@@ -34,6 +34,7 @@ class DefaultReadingComponent(
   private val _state = MutableValue<ReadingState>(ReadingState.Loading)
   override val state: Value<ReadingState> = _state
   override val isPlaying: Value<Boolean> = audioPlayer.isPlaying
+  override val isPlayerStarted: Value<Boolean> = audioPlayer.isPlayerStarted
 
   private val _currentAnchor = MutableValue(NO_ANCHOR)
   override val currentAnchor: Value<Int> = _currentAnchor

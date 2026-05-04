@@ -53,7 +53,7 @@ internal fun FloatingAiBar(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.padding(start = 16.dp),
       ) {
-        Waveform()
+        Waveform(isPlaying = isPlaying)
         Text(
           text = "Reading...",
           color = BodyMutedR,
