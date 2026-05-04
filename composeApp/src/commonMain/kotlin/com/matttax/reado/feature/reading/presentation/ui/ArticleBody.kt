@@ -65,10 +65,14 @@ internal fun LazyListScope.articleBody(
             val lineRects = buildList {
               for (i in 0 until tl.lineCount) {
                 val left = tl.getLineLeft(i) - padH
-                val right = tl.getLineRight(i) + padH
+                val right = if (i == tl.lineCount - 1) {
+                  tl.getLineRight(i) + padH
+                } else {
+                  this@drawBehind.size.width
+                }
                 if (right <= left) continue
-                val top = tl.getLineTop(i)
-                val bottom = tl.getLineBottom(i)
+                val top = tl.getLineTop(i) - 12f
+                val bottom = tl.getLineBottom(i) + 12f
                 if (bottom <= top) continue
                 add(Rect(left, top, right, bottom))
               }
