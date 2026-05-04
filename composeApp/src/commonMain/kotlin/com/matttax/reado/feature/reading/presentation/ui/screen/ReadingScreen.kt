@@ -42,11 +42,11 @@ import com.matttax.reado.feature.reading.presentation.ui.components.header.Artic
 import com.matttax.reado.feature.reading.presentation.ui.components.footer.FloatingAiBar
 import com.matttax.reado.feature.reading.presentation.ui.components.top_bar.ReadingTopAppBar
 import com.matttax.reado.feature.reading.presentation.ui.components.body.articleBody
+import com.matttax.reado.feature.reading.presentation.ui.screen.ScreenLayoutSpecs.BottomThresholdFraction
+import com.matttax.reado.feature.reading.presentation.ui.screen.ScreenLayoutSpecs.ItemSpacingDp
+import com.matttax.reado.feature.reading.presentation.ui.screen.ScreenLayoutSpecs.LeadItemsCount
 import kotlinx.datetime.LocalDate
 import kotlin.math.max
-
-private const val BOTTOM_THRESHOLD_FRACTION = 0.7f
-private const val LEAD_ITEMS_COUNT = 2
 
 @Composable
 fun ReadingScreen(
@@ -127,6 +127,7 @@ private fun BoxScope.ArticleContent(
   topPadding: Dp,
   onPlayPauseClick: () -> Unit,
 ) {
+  val density = LocalDensity.current
   val lazyListState = rememberLazyListState()
   val lastEndMs = result.audioParts.lastOrNull()?.timings?.lastOrNull()?.endMs ?: 0L
   val readMinutes = max(1, ((lastEndMs + 59_999L) / 60_000L).toInt())
@@ -138,7 +139,7 @@ private fun BoxScope.ArticleContent(
       .fillMaxSize()
       .padding(top = topPadding)
       .padding(horizontal = 24.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    verticalArrangement = Arrangement.spacedBy(ItemSpacingDp.dp),
   ) {
     item {
       Spacer(
@@ -167,12 +168,12 @@ private fun BoxScope.ArticleContent(
     if (currentAnchor < 0) return@LaunchedEffect
     val chunkIdx = sortedAnchors.indexOf(currentAnchor)
     if (chunkIdx < 0) return@LaunchedEffect
-    val itemIndex = chunkIdx + LEAD_ITEMS_COUNT
+    val itemIndex = chunkIdx + LeadItemsCount
 
     val info = lazyListState.layoutInfo
     val viewportHeight = info.viewportEndOffset - info.viewportStartOffset
     if (viewportHeight <= 0) return@LaunchedEffect
-    val threshold = info.viewportStartOffset + (viewportHeight * BOTTOM_THRESHOLD_FRACTION).toInt()
+    val threshold = info.viewportStartOffset + (viewportHeight * BottomThresholdFraction).toInt()
 
     val visible = info.visibleItemsInfo.firstOrNull { it.index == itemIndex }
     if (visible != null) {
@@ -186,15 +187,22 @@ private fun BoxScope.ArticleContent(
     val firstVisibleIdx = info.visibleItemsInfo.firstOrNull()?.index
     if (firstVisibleIdx != null && itemIndex < firstVisibleIdx) return@LaunchedEffect
 
-    lazyListState.animateScrollToItem(itemIndex)
-    val updated = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == itemIndex }
-      ?: return@LaunchedEffect
-    val updatedInfo = lazyListState.layoutInfo
-    val updatedViewportH = updatedInfo.viewportEndOffset - updatedInfo.viewportStartOffset
-    val updatedThreshold = updatedInfo.viewportStartOffset + (updatedViewportH * BOTTOM_THRESHOLD_FRACTION).toInt()
-    val updatedBottom = updated.offset + updated.size
-    val delta = updatedBottom - updatedThreshold
-    if (delta != 0) {
+    val lastVisible = info.visibleItemsInfo.lastOrNull()
+    if (lastVisible == null) {
+      lazyListState.animateScrollToItem(itemIndex)
+      return@LaunchedEffect
+    }
+    val spacingPx = with(density) { ItemSpacingDp.dp.roundToPx() }
+    val chunkSizes = info.visibleItemsInfo
+      .filter { it.index >= LeadItemsCount }
+      .map { it.size }
+    val estimatedChunkHeight =
+      if (chunkSizes.isNotEmpty()) chunkSizes.average().toInt() else lastVisible.size
+    val itemsBetween = itemIndex - lastVisible.index
+    val estimatedTargetBottom = lastVisible.offset + lastVisible.size +
+      itemsBetween * (estimatedChunkHeight + spacingPx)
+    val delta = estimatedTargetBottom - threshold
+    if (delta > 0) {
       lazyListState.animateScrollBy(delta.toFloat())
     }
   }
