@@ -71,6 +71,13 @@ class AndroidAudioPlayer(
       }
   }
 
+  override fun appendItems(items: List<PlaylistItem>) {
+    if (items.isEmpty()) return
+    val mediaItems = items.map { MediaItem.fromUri(it.url) }
+    player?.addMediaItems(mediaItems)
+    Log.i(TAG, "appendItems: ${items.size} items")
+  }
+
   override fun playPause() {
     val playerInstance = player ?: return
     if (playerInstance.isPlaying) {

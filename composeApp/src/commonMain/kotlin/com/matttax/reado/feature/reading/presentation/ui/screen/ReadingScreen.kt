@@ -161,7 +161,15 @@ private fun BoxScope.ArticleContent(
         )
       }
     }
-    articleBody(textChunks = textChunks, currentAnchor = currentAnchor)
+    articleBody(
+      textChunks = textChunks,
+      currentAnchor = currentAnchor,
+    )
+    item {
+      Spacer(
+        modifier = Modifier.height(100.dp),
+      )
+    }
   }
 
   LaunchedEffect(currentAnchor, sortedAnchors) {

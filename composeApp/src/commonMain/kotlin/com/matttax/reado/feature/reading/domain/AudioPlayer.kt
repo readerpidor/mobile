@@ -9,6 +9,7 @@ interface AudioPlayer {
   val isPlayerStarted: Value<Boolean>
   val position: Value<PlaybackPosition>
   fun setPlaylist(items: List<PlaylistItem>)
+  fun appendItems(items: List<PlaylistItem>)
   fun playPause()
   fun release()
 }

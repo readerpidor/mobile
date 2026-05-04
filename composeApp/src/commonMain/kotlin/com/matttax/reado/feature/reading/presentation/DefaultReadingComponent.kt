@@ -4,15 +4,18 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnDestroy
-import com.matttax.reado.feature.reading.domain.AudioPlayer
-import com.matttax.reado.feature.reading.domain.model.PlaybackPosition
-import com.matttax.reado.feature.reading.domain.model.PlaylistItem
 import com.matttax.reado.data.ReaderService
 import com.matttax.reado.data.model.Response
 import com.matttax.reado.data.model.common.AudioPart
+import com.matttax.reado.data.model.get_next_parts.GetNextPartsRequest
+import com.matttax.reado.data.model.get_next_parts.GetNextPartsResult
 import com.matttax.reado.data.model.process.ProcessRequest
+import com.matttax.reado.data.model.process.ProcessResult
 import com.matttax.reado.data.network.STORAGE_REACHABLE_AUTHORITY
 import com.matttax.reado.data.network.STORAGE_SIGNED_AUTHORITY
+import com.matttax.reado.feature.reading.domain.AudioPlayer
+import com.matttax.reado.feature.reading.domain.model.PlaybackPosition
+import com.matttax.reado.feature.reading.domain.model.PlaylistItem
 import com.matttax.reado.navigation.components.ReadingComponent
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.CoroutineScope
@@ -39,31 +42,39 @@ class DefaultReadingComponent(
   private val _currentAnchor = MutableValue(NO_ANCHOR)
   override val currentAnchor: Value<Int> = _currentAnchor
 
-  private var audioParts: List<AudioPart> = emptyList()
+  private var processResult: ProcessResult? = null
+  private var isLastBatch: Boolean = false
+  private var isLoadingNext: Boolean = false
 
   init {
-    val positionSub = audioPlayer.position.subscribe(::updateAnchor)
+    val positionSubscription = audioPlayer.position.subscribe(::onPositionChanged)
     lifecycle.doOnDestroy {
-      positionSub.cancel()
+      positionSubscription.cancel()
       audioPlayer.release()
       scope.cancel()
     }
     load()
   }
 
-  private fun updateAnchor(position: PlaybackPosition) {
+  private fun onPositionChanged(position: PlaybackPosition) {
     if (position == PlaybackPosition.EMPTY) {
       _currentAnchor.value = NO_ANCHOR
       return
     }
+    loadNextPartsIfNeeded(position.itemIndex)
+    updateAnchor(position)
+  }
+
+  private fun updateAnchor(position: PlaybackPosition) {
+    val parts = processResult?.audioParts ?: emptyList()
     val partIndex = position.itemIndex
-    val part = audioParts.getOrNull(partIndex)
+    val part = parts.getOrNull(partIndex)
     if (part == null) {
       _currentAnchor.value = NO_ANCHOR
       return
     }
     val timings = part.timings
-    val isLastPart = partIndex == audioParts.lastIndex
+    val isLastPart = partIndex == parts.lastIndex
     val pos = position.positionMs
     val anchor = timings.indices.firstNotNullOfOrNull { i ->
       val timing = timings[i]
@@ -92,26 +103,68 @@ class DefaultReadingComponent(
       _state.value = try {
         when (val response = readerService.process(ProcessRequest(url = url))) {
           is Response.Success -> {
-            val text = readerService.fetchArticleText(response.result.articleUrl)
+            val result = response.result
+            processResult = result
+            isLastBatch = result.audioParts.size >= result.totalParts
+            val text = readerService.fetchArticleText(result.articleUrl)
             val textChunks = processText(text)
-            audioParts = response.result.audioParts
-            audioPlayer.setPlaylist(
-              response.result.audioParts.map { part ->
-                PlaylistItem(
-                  url = part.audioUrl.replace(STORAGE_SIGNED_AUTHORITY, STORAGE_REACHABLE_AUTHORITY),
-                  headers = mapOf(HttpHeaders.Host to STORAGE_SIGNED_AUTHORITY),
-                )
-              },
-            )
-            ReadingState.Success(response.result, textChunks)
+            audioPlayer.setPlaylist(result.audioParts.map(::toPlaylistItem))
+            ReadingState.Success(result, textChunks)
           }
           is Response.Error -> ReadingState.Error
         }
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         ReadingState.Error
       }
     }
   }
+
+  private fun loadNextPartsIfNeeded(itemIndex: Int) {
+    if (isLastBatch || isLoadingNext) return
+    val current = processResult ?: return
+    val parts = current.audioParts
+    if (parts.isEmpty()) return
+    if (current.totalParts > 0 && parts.size >= current.totalParts) return
+    if (itemIndex < parts.lastIndex) return
+    val lastPartIndex = parts.last().partIndex
+    isLoadingNext = true
+    scope.launch {
+      try {
+        val request = GetNextPartsRequest(articleId = current.articleId, lastPartIndex = lastPartIndex)
+        when (val response = readerService.getNextParts(request)) {
+          is Response.Success -> appendBatch(response.result)
+          is Response.Error -> Unit
+        }
+      } catch (_: Exception) {
+        // ignore; will retry on next position update
+      } finally {
+        isLoadingNext = false
+      }
+    }
+  }
+
+  private suspend fun appendBatch(result: GetNextPartsResult) {
+    val current = processResult
+    if (current != null && result.audioParts.isNotEmpty()) {
+      val updated = current.copy(audioParts = current.audioParts + result.audioParts)
+      processResult = updated
+      audioPlayer.appendItems(result.audioParts.map(::toPlaylistItem))
+      val text = readerService.fetchArticleText(updated.articleUrl)
+      val textChunks = processText(text)
+      if (_state.value is ReadingState.Success) {
+        _state.value = ReadingState.Success(updated, textChunks)
+      }
+    }
+    if (result.isLastBatch) {
+      isLastBatch = true
+    }
+  }
+
+  private fun toPlaylistItem(part: AudioPart) =
+    PlaylistItem(
+      url = part.audioUrl.replace(STORAGE_SIGNED_AUTHORITY, STORAGE_REACHABLE_AUTHORITY),
+      headers = mapOf(HttpHeaders.Host to STORAGE_SIGNED_AUTHORITY),
+    )
 
   private fun processText(text: String): Map<Int, String> {
     val matches = Regex("<<(\\d+)>>").findAll(text).toList()

@@ -46,6 +46,25 @@ class IosAudioPlayer : AudioPlayer {
     rebuildPlayer()
   }
 
+  override fun appendItems(items: List<PlaylistItem>) {
+    if (items.isEmpty()) return
+    val playerInstance = player ?: return
+    val newAvItems = items.mapNotNull { item ->
+      val url = NSURL.URLWithString(item.url) ?: return@mapNotNull null
+      val asset = AVURLAsset(
+        uRL = url,
+        options = mapOf<Any?, Any>("AVURLAssetHTTPHeaderFieldsKey" to item.headers),
+      )
+      AVPlayerItem(asset = asset)
+    }
+    if (newAvItems.isEmpty()) return
+    this.playlistItems += items
+    this.items += newAvItems
+    newAvItems.forEach { item ->
+      playerInstance.insertItem(item, afterItem = null)
+    }
+  }
+
   override fun playPause() {
     val current = player ?: return
     if (current.rate != 0.0f) {
