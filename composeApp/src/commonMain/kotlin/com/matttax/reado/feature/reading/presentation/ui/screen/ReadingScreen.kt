@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +46,7 @@ import com.matttax.reado.feature.reading.presentation.ui.components.body.article
 import com.matttax.reado.feature.reading.presentation.ui.screen.ScreenLayoutSpecs.BottomThresholdFraction
 import com.matttax.reado.feature.reading.presentation.ui.screen.ScreenLayoutSpecs.ItemSpacingDp
 import com.matttax.reado.feature.reading.presentation.ui.screen.ScreenLayoutSpecs.LeadItemsCount
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlin.math.max
 
@@ -128,6 +130,7 @@ private fun BoxScope.ArticleContent(
   onPlayPauseClick: () -> Unit,
 ) {
   val density = LocalDensity.current
+  val coroutineScope = rememberCoroutineScope()
   val lazyListState = rememberLazyListState()
   val lastEndMs = result.audioParts.lastOrNull()?.timings?.lastOrNull()?.endMs ?: 0L
   val readMinutes = max(1, ((lastEndMs + 59_999L) / 60_000L).toInt())
@@ -224,6 +227,14 @@ private fun BoxScope.ArticleContent(
     FloatingAiBar(
       isPlaying = isPlaying,
       onPlayPauseClick = onPlayPauseClick,
+      onClick = {
+        val chunkIdx = sortedAnchors.indexOf(currentAnchor)
+        if (chunkIdx >= 0) {
+          coroutineScope.launch {
+            lazyListState.animateScrollToItem(chunkIdx)
+          }
+        }
+      },
       modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 24.dp, vertical = 32.dp),

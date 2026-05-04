@@ -33,10 +33,12 @@ import com.matttax.reado.feature.reading.presentation.ui.components.waveform.Wav
 @Composable
 internal fun FloatingAiBar(
   isPlaying: Boolean,
+  onClick: () -> Unit,
   onPlayPauseClick: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Card(
+    onClick = onClick,
     modifier = modifier,
     shape = CircleShape,
     colors = CardDefaults.cardColors(containerColor = BottomBarBg),
