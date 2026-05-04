@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.sp
 import com.matttax.reado.data.model.process.ProcessResult
 import com.matttax.reado.feature.reading.domain.model.ArticleMetadata
 import com.matttax.reado.feature.reading.presentation.ReadingState
-import com.matttax.reado.feature.reading.presentation.ui.ArticleHeader
-import com.matttax.reado.feature.reading.presentation.ui.FloatingAiBar
-import com.matttax.reado.feature.reading.presentation.ui.ReadingTopAppBar
-import com.matttax.reado.feature.reading.presentation.ui.body.articleBody
+import com.matttax.reado.feature.reading.presentation.ui.components.header.ArticleHeader
+import com.matttax.reado.feature.reading.presentation.ui.components.footer.FloatingAiBar
+import com.matttax.reado.feature.reading.presentation.ui.components.top_bar.ReadingTopAppBar
+import com.matttax.reado.feature.reading.presentation.ui.components.body.articleBody
 import kotlinx.datetime.LocalDate
 import kotlin.math.max
 

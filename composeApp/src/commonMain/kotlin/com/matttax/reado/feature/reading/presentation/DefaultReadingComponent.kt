@@ -4,9 +4,9 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnDestroy
-import com.matttax.reado.audio.AudioPlayer
-import com.matttax.reado.audio.PlaybackPosition
-import com.matttax.reado.audio.PlaylistItem
+import com.matttax.reado.feature.reading.domain.AudioPlayer
+import com.matttax.reado.feature.reading.domain.model.PlaybackPosition
+import com.matttax.reado.feature.reading.domain.model.PlaylistItem
 import com.matttax.reado.data.ReaderService
 import com.matttax.reado.data.model.Response
 import com.matttax.reado.data.model.common.AudioPart

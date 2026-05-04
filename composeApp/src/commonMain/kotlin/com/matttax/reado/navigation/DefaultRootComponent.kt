@@ -9,13 +9,13 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.value.Value
-import com.matttax.reado.audio.AudioPlayer
 import com.matttax.reado.data.ReaderService
 import com.matttax.reado.feature.account.presentation.DefaultAccountComponent
 import com.matttax.reado.feature.history.presentation.DefaultHistoryComponent
 import com.matttax.reado.feature.home.presentation.DefaultHomeComponent
 import com.matttax.reado.feature.login.presentation.DefaultLoginComponent
 import com.matttax.reado.feature.reading.presentation.DefaultReadingComponent
+import com.matttax.reado.feature.reading.domain.AudioPlayer
 import kotlinx.serialization.Serializable
 
 class DefaultRootComponent(
