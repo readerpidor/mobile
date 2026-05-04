@@ -41,7 +41,7 @@ import com.matttax.reado.feature.reading.presentation.ReadingState
 import com.matttax.reado.feature.reading.presentation.ui.ArticleHeader
 import com.matttax.reado.feature.reading.presentation.ui.FloatingAiBar
 import com.matttax.reado.feature.reading.presentation.ui.ReadingTopAppBar
-import com.matttax.reado.feature.reading.presentation.ui.articleBody
+import com.matttax.reado.feature.reading.presentation.ui.body.articleBody
 import kotlinx.datetime.LocalDate
 import kotlin.math.max
 
