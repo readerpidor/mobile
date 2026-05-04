@@ -28,6 +28,7 @@ import com.matttax.reado.common.ui.images.IcPauseBottom
 import com.matttax.reado.common.ui.images.IcPlayBottom
 import com.matttax.reado.feature.reading.presentation.ui.screen.BodyMutedR
 import com.matttax.reado.feature.reading.presentation.ui.screen.BottomBarBg
+import com.matttax.reado.feature.reading.presentation.ui.waveform.Waveform
 
 @Composable
 internal fun FloatingAiBar(
