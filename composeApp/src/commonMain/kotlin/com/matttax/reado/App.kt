@@ -43,6 +43,7 @@ fun App(component: RootComponent) {
             isPlayerStarted = isPlayerStarted,
             currentAnchor = currentAnchor,
             onBack = instance.component::onBack,
+            onStopClick = instance.component::onStopClick,
             onPlayPauseClick = instance.component::onPlayPauseClick,
           )
         }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matttax.reado.common.ui.images.IcPauseBottom
 import com.matttax.reado.common.ui.images.IcPlayBottom
+import com.matttax.reado.common.ui.images.IcStopBottom
 import com.matttax.reado.feature.reading.presentation.ui.screen.BodyMutedR
 import com.matttax.reado.feature.reading.presentation.ui.screen.BottomBarBg
 import com.matttax.reado.feature.reading.presentation.ui.components.waveform.Waveform
@@ -35,6 +36,7 @@ internal fun FloatingAiBar(
   isPlaying: Boolean,
   onClick: () -> Unit,
   onPlayPauseClick: () -> Unit,
+  onStopClick: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Card(
@@ -75,6 +77,15 @@ internal fun FloatingAiBar(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.padding(end = 4.dp),
       ) {
+        MiniCircleButton(
+          onClick = onStopClick,
+        ) {
+          Image(
+            imageVector = IcStopBottom,
+            contentDescription = null,
+            modifier = Modifier.size(11.dp),
+          )
+        }
         MiniCircleButton(
           onClick = onPlayPauseClick
         ) {

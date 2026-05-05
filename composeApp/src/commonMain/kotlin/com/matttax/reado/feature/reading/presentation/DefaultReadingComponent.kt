@@ -97,6 +97,10 @@ class DefaultReadingComponent(
     audioPlayer.playPause()
   }
 
+  override fun onStopClick() {
+    audioPlayer.endPlayback()
+  }
+
   private fun load() {
     scope.launch {
       _state.value = ReadingState.Loading

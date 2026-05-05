@@ -65,6 +65,14 @@ class IosAudioPlayer : AudioPlayer {
     }
   }
 
+  override fun endPlayback() {
+    player?.pause()
+    rebuildPlayer()
+    _isPlayerStarted.value = false
+    _isPlaying.value = false
+    _position.value = PlaybackPosition.EMPTY
+  }
+
   override fun playPause() {
     val current = player ?: return
     if (current.rate != 0.0f) {
@@ -115,15 +123,13 @@ class IosAudioPlayer : AudioPlayer {
     positionJob?.cancel()
     positionJob = scope.launch {
       while (isActive) {
-        val p = player ?: break
-        if (_isPlayerStarted.value && p.currentItem == null) {
-          _isPlayerStarted.value = false
-          _isPlaying.value = false
-          _position.value = PlaybackPosition.EMPTY
+        val playerInstance = player ?: break
+        if (_isPlayerStarted.value && playerInstance.currentItem == null) {
+          endPlayback()
           break
         }
         _position.value = if (_isPlayerStarted.value) {
-          val current = p.currentItem
+          val current = playerInstance.currentItem
           val idx = if (current != null) items.indexOf(current).coerceAtLeast(0) else 0
           val seconds = current?.currentTime()?.let { CMTimeGetSeconds(it) } ?: 0.0
           val ms = if (seconds.isFinite()) (seconds * 1000.0).toLong() else 0L

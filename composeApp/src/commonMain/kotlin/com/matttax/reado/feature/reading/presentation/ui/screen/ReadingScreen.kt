@@ -58,6 +58,7 @@ fun ReadingScreen(
   currentAnchor: Int,
   modifier: Modifier = Modifier,
   onBack: () -> Unit = {},
+  onStopClick: () -> Unit = {},
   onPlayPauseClick: () -> Unit = {},
 ) {
   val density = LocalDensity.current
@@ -77,6 +78,7 @@ fun ReadingScreen(
         isPlayerStarted = isPlayerStarted,
         currentAnchor = currentAnchor,
         topPadding = topBarHeight,
+        onStopClick = onStopClick,
         onPlayPauseClick = onPlayPauseClick,
       )
     }
@@ -127,6 +129,7 @@ private fun BoxScope.ArticleContent(
   isPlaying: Boolean,
   isPlayerStarted: Boolean,
   topPadding: Dp,
+  onStopClick: () -> Unit,
   onPlayPauseClick: () -> Unit,
 ) {
   val density = LocalDensity.current
@@ -227,6 +230,7 @@ private fun BoxScope.ArticleContent(
     FloatingAiBar(
       isPlaying = isPlaying,
       onPlayPauseClick = onPlayPauseClick,
+      onStopClick = onStopClick,
       onClick = {
         val chunkIdx = sortedAnchors.indexOf(currentAnchor)
         if (chunkIdx >= 0) {

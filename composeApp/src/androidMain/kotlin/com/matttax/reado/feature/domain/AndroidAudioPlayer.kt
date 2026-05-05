@@ -57,18 +57,26 @@ class AndroidAudioPlayer(
           AudioPlaybackStateListener(
             onPlayingChanged = { playing ->
               _isPlaying.value = playing
-              if (playing) startPositionUpdates() else stopPositionUpdates()
+              if (playing) {
+                startPositionUpdates()
+              } else {
+                stopPositionUpdates()
+              }
             },
-            onEnded = {
-              _isPlayerStarted.value = false
-              _isPlaying.value = false
-              _position.value = PlaybackPosition.EMPTY
-              stopPositionUpdates()
-            },
+            onEnded = { endPlayback() },
           ),
         )
         prepare()
       }
+  }
+
+  override fun endPlayback() {
+    stopPositionUpdates()
+    player?.pause()
+    player?.seekTo(0, 0L)
+    _isPlayerStarted.value = false
+    _isPlaying.value = false
+    _position.value = PlaybackPosition.EMPTY
   }
 
   override fun appendItems(items: List<PlaylistItem>) {

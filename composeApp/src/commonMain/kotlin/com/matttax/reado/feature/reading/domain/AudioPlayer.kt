@@ -11,5 +11,6 @@ interface AudioPlayer {
   fun setPlaylist(items: List<PlaylistItem>)
   fun appendItems(items: List<PlaylistItem>)
   fun playPause()
+  fun endPlayback()
   fun release()
 }

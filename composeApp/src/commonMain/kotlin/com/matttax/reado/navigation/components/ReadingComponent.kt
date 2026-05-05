@@ -9,5 +9,6 @@ interface ReadingComponent {
   val isPlayerStarted: Value<Boolean>
   val currentAnchor: Value<Int>
   fun onPlayPauseClick()
+  fun onStopClick()
   fun onBack()
 }
