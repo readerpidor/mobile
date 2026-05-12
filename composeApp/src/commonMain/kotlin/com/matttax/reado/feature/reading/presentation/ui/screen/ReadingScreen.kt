@@ -156,10 +156,10 @@ private fun BoxScope.ArticleContent(
       Box(modifier = Modifier.padding(bottom = 32.dp)) {
         ArticleHeader(
           metadata = ArticleMetadata(
-            articleTopic = "Unknown",
+            articleTopic = result.topic.uppercase(),
+            authorName = result.author,
             title = result.title,
             readMinutes = readMinutes,
-            authorName = "Unknown",
             publicationDate = LocalDate(2025, 5, 2),
           ),
           isPlaying = isPlaying,

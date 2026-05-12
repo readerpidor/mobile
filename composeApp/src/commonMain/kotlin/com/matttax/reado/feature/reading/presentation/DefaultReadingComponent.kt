@@ -110,9 +110,13 @@ class DefaultReadingComponent(
             val result = response.result
             processResult = result
             isLastBatch = result.audioParts.size >= result.totalParts
-            val text = readerService.fetchArticleText(result.articleUrl)
+            val text = readerService.fetchArticleText(result.markdownArticleUrl)
             val textChunks = processText(text)
-            audioPlayer.setPlaylist(result.audioParts.map(::toPlaylistItem))
+              .mapValues { (_, chunk) -> MarkdownStripper.strip(chunk) }
+            val playlistItems = result.audioParts
+              .sortedBy { it.partIndex }
+              .map(::toPlaylistItem)
+            audioPlayer.setPlaylist(playlistItems)
             ReadingState.Success(result, textChunks)
           }
           is Response.Error -> ReadingState.Error
@@ -153,8 +157,9 @@ class DefaultReadingComponent(
       val updated = current.copy(audioParts = current.audioParts + result.audioParts)
       processResult = updated
       audioPlayer.appendItems(result.audioParts.map(::toPlaylistItem))
-      val text = readerService.fetchArticleText(updated.articleUrl)
+      val text = readerService.fetchArticleText(updated.markdownArticleUrl)
       val textChunks = processText(text)
+        .mapValues { (_, chunk) -> MarkdownStripper.strip(chunk) }
       if (_state.value is ReadingState.Success) {
         _state.value = ReadingState.Success(updated, textChunks)
       }

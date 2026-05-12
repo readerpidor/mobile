@@ -10,4 +10,8 @@ data class ProcessResult(
   val articleUrl: String,
   val audioParts: List<AudioPart>,
   val totalParts: Int,
+  val author: String,
+  val topic: String,
+  val markdownArticleUrl: String,
+  val estimatedTotalDurationMs: Long,
 )
