@@ -111,7 +111,8 @@ class DefaultReadingComponent(
             processResult = result
             isLastBatch = result.audioParts.size >= result.totalParts
             val text = readerService.fetchArticleText(result.markdownArticleUrl)
-            val textChunks = processText(text)
+            val chunkedText = processText(text)
+            val textChunks = MarkdownBalancer.balance(chunkedText)
               .mapValues { (_, chunk) -> MarkdownStripper.strip(chunk) }
             val playlistItems = result.audioParts
               .sortedBy { it.partIndex }
@@ -158,7 +159,7 @@ class DefaultReadingComponent(
       processResult = updated
       audioPlayer.appendItems(result.audioParts.map(::toPlaylistItem))
       val text = readerService.fetchArticleText(updated.markdownArticleUrl)
-      val textChunks = processText(text)
+      val textChunks = MarkdownBalancer.balance(processText(text))
         .mapValues { (_, chunk) -> MarkdownStripper.strip(chunk) }
       if (_state.value is ReadingState.Success) {
         _state.value = ReadingState.Success(updated, textChunks)
