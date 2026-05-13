@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.matttax.reado.data.model.process.ProcessResult
 import com.matttax.reado.feature.reading.domain.model.ArticleMetadata
 import com.matttax.reado.feature.reading.presentation.ReadingState
+import com.matttax.reado.feature.reading.presentation.TextData
 import com.matttax.reado.feature.reading.presentation.ui.components.header.ArticleHeader
 import com.matttax.reado.feature.reading.presentation.ui.components.footer.FloatingAiBar
 import com.matttax.reado.feature.reading.presentation.ui.components.top_bar.ReadingTopAppBar
@@ -69,8 +70,8 @@ fun ReadingScreen(
       .background(ReadingBg),
   ) {
     when (state) {
-      ReadingState.Loading -> LoadingContent()
-      ReadingState.Error -> ErrorContent()
+      is ReadingState.Loading -> LoadingContent()
+      is ReadingState.Error -> ErrorContent()
       is ReadingState.Success -> ArticleContent(
         result = state.result,
         textChunks = state.textChunks,
@@ -124,7 +125,7 @@ private fun BoxScope.ErrorContent() {
 @Composable
 private fun BoxScope.ArticleContent(
   result: ProcessResult,
-  textChunks: Map<Int, String>,
+  textChunks: Map<Int, TextData>,
   currentAnchor: Int,
   isPlaying: Boolean,
   isPlayerStarted: Boolean,
@@ -153,7 +154,9 @@ private fun BoxScope.ArticleContent(
       )
     }
     item(key = "header") {
-      Box(modifier = Modifier.padding(bottom = 32.dp)) {
+      Box(
+        modifier = Modifier.padding(bottom = 7.dp),
+      ) {
         ArticleHeader(
           metadata = ArticleMetadata(
             articleTopic = result.topic.uppercase(),

@@ -7,6 +7,6 @@ sealed interface ReadingState {
   data object Error : ReadingState
   data class Success(
     val result: ProcessResult,
-    val textChunks: Map<Int, String>,
+    val textChunks: Map<Int, TextData>,
   ) : ReadingState
 }

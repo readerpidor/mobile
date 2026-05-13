@@ -2,7 +2,15 @@ package com.matttax.reado.feature.reading.presentation
 
 object MarkdownStripper {
 
-  fun strip(text: String): String {
+  private val HEADER_PREFIX = Regex("""^\s*(#{1,6})\s+""")
+
+  fun strip(text: String): TextData {
+    val headerMatch = HEADER_PREFIX.find(text)
+    val textType = if (headerMatch != null) {
+      TextType.Header(level = headerMatch.groupValues[1].length)
+    } else {
+      TextType.Default
+    }
     var s = text
     s = removeImages(s)
     s = removeLinks(s)
@@ -16,7 +24,7 @@ object MarkdownStripper {
     s = removeEmphasis(s)
     s = removeStrikethrough(s)
     s = unescape(s)
-    return s
+    return TextData(text = s, textType = textType)
   }
 
   private fun removeImages(s: String): String {
