@@ -5,7 +5,7 @@ object MarkdownStripper {
   private val HEADER_PREFIX = Regex("""^\s*(#{1,6})\s+""")
 
   // Longest-first so e.g. `***` is matched before `**` and `**` before `*`.
-  private val EMPHASIS_DELIMITERS = listOf("***", "___", "**", "__", "*", "_")
+  private val EMPHASIS_DELIMITERS = listOf("***", "___", "**", "__", "*", "_", "`")
 
   private val ESCAPABLE = setOf(
     '\\', '`', '*', '_', '{', '}', '[', ']', '(', ')',
@@ -24,7 +24,6 @@ object MarkdownStripper {
     s = removeLinks(s)
     s = removeAutoLinks(s)
     s = removeCodeBlocks(s)
-    s = removeInlineCode(s)
     s = removeHeadings(s)
     s = removeHorizontalRules(s)
     s = removeBlockquotes(s)
@@ -68,9 +67,6 @@ object MarkdownStripper {
     r = r.replace("```", "")
     return r
   }
-
-  private fun removeInlineCode(s: String): String =
-    Regex("""`+([^`]+)`+""").replace(s, "$1")
 
   private fun removeHeadings(s: String): String {
     var r = s
@@ -121,6 +117,7 @@ object MarkdownStripper {
             "***", "___" -> TextType.BoldItalic(spanStart, spanEnd)
             "**", "__" -> TextType.Bold(spanStart, spanEnd)
             "*", "_" -> TextType.Italic(spanStart, spanEnd)
+            "`" -> TextType.Code(spanStart, spanEnd)
             else -> null
           }
           if (span != null) spans.add(span)

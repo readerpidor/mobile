@@ -1,7 +1,9 @@
 package com.matttax.reado.feature.reading.presentation.ui.components.body
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -64,6 +66,7 @@ private fun TextType.spanStyle(): SpanStyle? = when (this) {
   is TextType.Bold -> SpanStyle(fontWeight = FontWeight.Bold)
   is TextType.Italic -> SpanStyle(fontStyle = FontStyle.Italic)
   is TextType.BoldItalic -> SpanStyle(fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic)
+  is TextType.Code -> SpanStyle(fontFamily = FontFamily.Monospace, color = Color.DarkGray)
   else -> null
 }
 
@@ -71,6 +74,7 @@ private fun TextType.range(): Pair<Int, Int>? = when (this) {
   is TextType.Bold -> start to end
   is TextType.Italic -> start to end
   is TextType.BoldItalic -> start to end
+  is TextType.Code -> start to end
   else -> null
 }
 
