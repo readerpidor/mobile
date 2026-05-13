@@ -35,10 +35,12 @@ internal fun LazyListScope.articleBody(
         targetValue = if (isActive) 1f else 0f,
         animationSpec = tween(durationMillis = 300),
       )
-      val fontSize = chunk.textType.fontSize()
-      val fontWeight = chunk.textType.fontWeight()
-      val verticalPadding = chunk.textType.verticalPadding()
-      val lineHeight = (fontSize.value * chunk.textType.lineHeightMultiplier()).sp
+      val paragraphType = chunk.paragraphType()
+      val fontSize = paragraphType.fontSize()
+      val fontWeight = paragraphType.fontWeight()
+      val verticalPadding = paragraphType.verticalPadding()
+      val lineHeight = (fontSize.value * paragraphType.lineHeightMultiplier()).sp
+      val annotatedText = remember(chunk) { chunk.toAnnotatedString() }
       Text(
         modifier = Modifier
           .fillMaxWidth()
@@ -47,7 +49,7 @@ internal fun LazyListScope.articleBody(
             if (bubbleAlpha <= 0f) return@drawBehind
             drawBubbleShape(layout, bubbleAlpha)
           },
-        text = chunk.text,
+        text = annotatedText,
         color = BodyPrimary,
         style = TextStyle(
           fontFamily = FontFamily.Serif,
