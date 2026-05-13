@@ -1,11 +1,14 @@
 package com.matttax.reado.feature.reading.presentation.ui.components.body
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -27,13 +30,38 @@ fun TextData.toAnnotatedString() = buildAnnotatedString {
   append(text)
   val length = text.length
   for (type in textTypes) {
-    val style = type.spanStyle() ?: continue
-    val range = type.range() ?: continue
-    val start = range.first.coerceIn(0, length)
-    val end = range.second.coerceIn(start, length)
-    if (start < end) addStyle(style, start, end)
+    when (type) {
+      is TextType.Link -> {
+        val start = type.start.coerceIn(0, length)
+        val end = type.end.coerceIn(start, length)
+        if (start < end) {
+          addLink(
+            url = LinkAnnotation.Url(
+              url = type.url,
+              styles = TextLinkStyles(style = LinkSpanStyle),
+            ),
+            start = start,
+            end = end,
+          )
+        }
+      }
+      else -> {
+        val style = type.spanStyle()
+        val range = type.range()
+        if (style != null && range != null) {
+          val start = range.first.coerceIn(0, length)
+          val end = range.second.coerceIn(start, length)
+          if (start < end) addStyle(style, start, end)
+        }
+      }
+    }
   }
 }
+
+private val LinkSpanStyle = SpanStyle(
+  color = Color.Blue,
+  textDecoration = TextDecoration.Underline,
+)
 
 fun TextType.fontSize(): TextUnit = when (this) {
   is TextType.Header -> {
@@ -66,7 +94,7 @@ private fun TextType.spanStyle(): SpanStyle? = when (this) {
   is TextType.Bold -> SpanStyle(fontWeight = FontWeight.Bold)
   is TextType.Italic -> SpanStyle(fontStyle = FontStyle.Italic)
   is TextType.BoldItalic -> SpanStyle(fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic)
-  is TextType.Code -> SpanStyle(fontFamily = FontFamily.Monospace, color = Color.DarkGray)
+  is TextType.Code -> SpanStyle(fontFamily = FontFamily.Monospace, color = Color.Gray)
   else -> null
 }
 

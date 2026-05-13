@@ -12,4 +12,5 @@ sealed interface TextType {
   data class Italic(val start: Int, val end: Int) : TextType
   data class BoldItalic(val start: Int, val end: Int) : TextType
   data class Code(val start: Int, val end: Int) : TextType
+  data class Link(val start: Int, val end: Int, val url: String) : TextType
 }
