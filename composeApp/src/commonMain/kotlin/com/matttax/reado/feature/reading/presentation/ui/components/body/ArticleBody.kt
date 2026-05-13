@@ -39,12 +39,14 @@ internal fun LazyListScope.articleBody(
       val fontSize = paragraphType.fontSize()
       val fontWeight = paragraphType.fontWeight()
       val verticalPadding = paragraphType.verticalPadding()
+      val startPadding = paragraphType.startPadding()
       val lineHeight = (fontSize.value * paragraphType.lineHeightMultiplier()).sp
       val annotatedText = remember(chunk) { chunk.toAnnotatedString() }
       Text(
         modifier = Modifier
           .fillMaxWidth()
           .padding(vertical = verticalPadding)
+          .padding(start = startPadding)
           .drawBehind {
             if (bubbleAlpha <= 0f) return@drawBehind
             drawBubbleShape(layout, bubbleAlpha)

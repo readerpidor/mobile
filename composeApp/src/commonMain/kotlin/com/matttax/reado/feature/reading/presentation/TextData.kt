@@ -7,6 +7,8 @@ data class TextData(
 
 sealed interface TextType {
   data object Default : TextType
+  data object BulletPoint : TextType
+  data class NumberPoint(val number: Int) : TextType
   data class Header(val level: Int) : TextType
   data class Bold(val start: Int, val end: Int) : TextType
   data class Italic(val start: Int, val end: Int) : TextType

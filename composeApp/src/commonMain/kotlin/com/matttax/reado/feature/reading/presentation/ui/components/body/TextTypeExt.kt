@@ -22,26 +22,39 @@ import com.matttax.reado.feature.reading.presentation.ui.components.body.Article
 import com.matttax.reado.feature.reading.presentation.ui.components.body.ArticleBodySpecs.HeaderTopPaddingBaseDp
 import com.matttax.reado.feature.reading.presentation.ui.components.body.ArticleBodySpecs.HeaderTopPaddingStepDp
 import com.matttax.reado.feature.reading.presentation.ui.components.body.ArticleBodySpecs.LineHeightMultiplier
+import com.matttax.reado.feature.reading.presentation.ui.components.body.ArticleBodySpecs.ListStartPaddingDp
 
 fun TextData.paragraphType(): TextType =
-  textTypes.firstOrNull { it is TextType.Header } ?: TextType.Default
+  textTypes.firstOrNull {
+    it is TextType.Header || it is TextType.BulletPoint || it is TextType.NumberPoint
+  } ?: TextType.Default
 
 fun TextData.toAnnotatedString() = buildAnnotatedString {
+  val marker = paragraphType().listMarker()
+  val offset: Int
+  if (marker != null) {
+    addStyle(SpanStyle(fontWeight = FontWeight.Bold), length, length + marker.length)
+    append(marker)
+    append("\t")
+    offset = length
+  } else {
+    offset = 0
+  }
   append(text)
-  val length = text.length
+  val end = this.length
   for (type in textTypes) {
     when (type) {
       is TextType.Link -> {
-        val start = type.start.coerceIn(0, length)
-        val end = type.end.coerceIn(start, length)
-        if (start < end) {
+        val s = (type.start + offset).coerceIn(offset, end)
+        val e = (type.end + offset).coerceIn(s, end)
+        if (s < e) {
           addLink(
             url = LinkAnnotation.Url(
               url = type.url,
               styles = TextLinkStyles(style = LinkSpanStyle),
             ),
-            start = start,
-            end = end,
+            start = s,
+            end = e,
           )
         }
       }
@@ -49,13 +62,19 @@ fun TextData.toAnnotatedString() = buildAnnotatedString {
         val style = type.spanStyle()
         val range = type.range()
         if (style != null && range != null) {
-          val start = range.first.coerceIn(0, length)
-          val end = range.second.coerceIn(start, length)
-          if (start < end) addStyle(style, start, end)
+          val s = (range.first + offset).coerceIn(offset, end)
+          val e = (range.second + offset).coerceIn(s, end)
+          if (s < e) addStyle(style, s, e)
         }
       }
     }
   }
+}
+
+private fun TextType.listMarker(): String? = when (this) {
+  is TextType.BulletPoint -> "•\t"
+  is TextType.NumberPoint -> "$number.\t"
+  else -> null
 }
 
 private val LinkSpanStyle = SpanStyle(
@@ -87,6 +106,11 @@ fun TextType.verticalPadding(): Dp = when (this) {
     (HeaderTopPaddingBaseDp + (DefaultLevel - clamped) * HeaderTopPaddingStepDp)
       .coerceAtLeast(0f).dp
   }
+  else -> 0.dp
+}
+
+fun TextType.startPadding(): Dp = when (this) {
+  is TextType.BulletPoint, is TextType.NumberPoint -> ListStartPaddingDp.dp
   else -> 0.dp
 }
 

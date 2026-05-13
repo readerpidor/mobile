@@ -8,4 +8,5 @@ object ArticleBodySpecs {
   const val HeaderLineHeightMultiplier = 1.35f
   const val HeaderTopPaddingStepDp = 2f
   const val HeaderTopPaddingBaseDp = 4f
+  const val ListStartPaddingDp = 12f
 }

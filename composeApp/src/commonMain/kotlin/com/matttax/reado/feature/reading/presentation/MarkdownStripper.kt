@@ -3,6 +3,8 @@ package com.matttax.reado.feature.reading.presentation
 object MarkdownStripper {
 
   private val HEADER_PREFIX = Regex("""^\s*(#{1,6})\s+""")
+  private val BULLET_PREFIX = Regex("""^\s*-\s+""")
+  private val NUMBER_PREFIX = Regex("""^\s*(\d+)\.\s+""")
 
   // Longest-first so e.g. `***` is matched before `**` and `**` before `*`.
   private val EMPHASIS_DELIMITERS = listOf("***", "___", "**", "__", "*", "_", "`")
@@ -14,10 +16,13 @@ object MarkdownStripper {
 
   fun strip(text: String): TextData {
     val headerMatch = HEADER_PREFIX.find(text)
-    val paragraphType: TextType = if (headerMatch != null) {
-      TextType.Header(level = headerMatch.groupValues[1].length)
-    } else {
-      TextType.Default
+    val bulletMatch = if (headerMatch == null) BULLET_PREFIX.find(text) else null
+    val numberMatch = if (headerMatch == null && bulletMatch == null) NUMBER_PREFIX.find(text) else null
+    val paragraphType: TextType = when {
+      headerMatch != null -> TextType.Header(level = headerMatch.groupValues[1].length)
+      bulletMatch != null -> TextType.BulletPoint
+      numberMatch != null -> TextType.NumberPoint(number = numberMatch.groupValues[1].toInt())
+      else -> TextType.Default
     }
     var s = text
     s = removeImages(s)
